@@ -13,8 +13,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-image: 
-                linear-gradient(rgba(13, 17, 23, 0.95), rgba(13, 17, 23, 0.95)), 
-                url('https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?q=80&w=1974&auto=format&fit=crop');
+                linear-gradient(rgba(13, 17, 23, 0.97), rgba(13, 17, 23, 0.97)), 
+                url('https://images.unsplash.com/photo-1611042553365-94c03545a278?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -138,13 +138,15 @@
         </header>
 
         <!-- Navigasi Utama -->
-        <nav class="flex flex-wrap justify-center mb-12 bg-gray-900/50 backdrop-blur-sm p-1.5 rounded-xl max-w-3xl mx-auto border border-gray-700">
+        <nav class="flex flex-wrap justify-center mb-12 bg-gray-900/50 backdrop-blur-sm p-1.5 rounded-xl max-w-5xl mx-auto border border-gray-700">
             <button class="main-nav-btn" data-page="home-section">Home</button>
             <button class="main-nav-btn" data-page="rental-section">Rental PC</button>
             <button class="main-nav-btn" data-page="store-section">Toko Akun</button>
             <button class="main-nav-btn" data-page="about-section">Tentang Kami</button>
             <button class="main-nav-btn" data-page="tutorial-section">Tutorial</button>
+            <button class="main-nav-btn" data-page="queue-section">Antrian</button>
             <button class="main-nav-btn" data-page="trust-section">Riwayat</button>
+            <button class="main-nav-btn" data-page="profile-section">Profil</button>
             <button class="main-nav-btn" data-page="faq-section">FAQ</button>
         </nav>
 
@@ -157,7 +159,7 @@
                  
                  <!-- Sesi Aktif -->
                 <div id="active-session-container" class="mb-12">
-                     <h3 class="text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;">Sesi Aktif Anda</h3>
+                     <h3 class="text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;">Status Sesi PC</h3>
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                          <!-- Slot 1 -->
                          <div id="session-slot-1" class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 300ms;">
@@ -440,6 +442,25 @@
                     </a>
                 </div>
             </section>
+
+            <!-- Halaman Antrian -->
+            <section id="queue-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold text-white mb-8 fade-in-up">Status Antrian Anda</h2>
+                <div id="queue-status-container" class="bg-[#161B22] p-8 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                    <!-- Status antrian akan dimuat di sini -->
+                    <div id="queue-loading">
+                        <i data-lucide="loader-2" class="spinner w-12 h-12 mx-auto text-blue-500"></i>
+                        <p class="mt-4 text-gray-400">Memuat status antrian...</p>
+                    </div>
+                    <div id="queue-position" class="hidden">
+                        <p class="text-xl text-gray-300 mb-2">Posisi Anda saat ini:</p>
+                        <p class="text-5xl font-bold text-yellow-400"></p>
+                    </div>
+                    <div id="not-in-queue" class="hidden">
+                         <p class="text-xl text-gray-400">Anda tidak berada dalam antrian saat ini. Silakan sewa PC jika slot tersedia.</p>
+                    </div>
+                </div>
+            </section>
             
             <!-- Halaman Riwayat Transaksi -->
             <section id="trust-section" class="page-section hidden">
@@ -449,6 +470,16 @@
                         <!-- Riwayat transaksi dari Firebase akan dimuat di sini -->
                         <p id="no-transaction-msg" class="text-center text-gray-400">Belum ada transaksi.</p>
                     </div>
+                </div>
+            </section>
+
+             <!-- Halaman Profil -->
+            <section id="profile-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold text-white mb-8 fade-in-up">Profil Anda</h2>
+                <div class="bg-[#161B22] p-8 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                    <p class="text-xl text-gray-300 mb-2">ID Profil Unik Anda:</p>
+                    <p id="profile-id-display" class="text-4xl font-bold text-green-400">Memuat...</p>
+                    <p class="text-sm text-gray-500 mt-4">Gunakan ID ini jika Anda perlu menghubungi admin. ID ini tersimpan di browser Anda.</p>
                 </div>
             </section>
 
@@ -480,7 +511,7 @@
                             <i data-lucide="plus" class="faq-icon"></i>
                         </button>
                         <div class="faq-answer px-5 pb-5 text-gray-400">
-                            <p>Sisa waktu sewa Anda akan selalu ditampilkan di bagian "Sesi Aktif Anda" pada halaman Home selama sesi masih berjalan.</p>
+                            <p>Sisa waktu sewa Anda akan selalu ditampilkan di bagian "Status Sesi PC" pada halaman Home selama sesi masih berjalan.</p>
                         </div>
                     </div>
                 </div>
@@ -577,7 +608,7 @@
         // Import fungsi yang diperlukan dari Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, getDoc, onSnapshot, serverTimestamp, query, orderBy, where, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, onSnapshot, serverTimestamp, query, orderBy, where, updateDoc, Timestamp, runTransaction, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
         // =================================================================================
         // KONFIGURASI FIREBASE ANDA
@@ -598,14 +629,15 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-        let countdownIntervals = {}; // Untuk menyimpan interval countdown
+        let currentUserProfile = null;
+        let countdownIntervals = {}; 
         
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
-                console.log("Logged in anonymously with UID:", currentUserId);
+                await loadOrCreateUserProfile();
                 loadTransactions();
-                // Listener untuk kedua slot
+                loadQueueStatus();
                 onSnapshot(doc(db, "active_sessions", "pc_slot_1"), (doc) => updateSessionUI('slot-1', doc.data()));
                 onSnapshot(doc(db, "active_sessions", "pc_slot_2"), (doc) => updateSessionUI('slot-2', doc.data()));
             } else {
@@ -642,6 +674,38 @@
             requestAnimationFrame(() => navigateTo('home-section'));
         });
 
+        // --- Logika Profil Pengguna ---
+        async function loadOrCreateUserProfile() {
+            if (!currentUserId) return;
+            const profileRef = doc(db, "users", currentUserId);
+            const profileSnap = await getDoc(profileRef);
+
+            if (profileSnap.exists()) {
+                currentUserProfile = profileSnap.data();
+            } else {
+                const counterRef = doc(db, "metadata", "userCounter");
+                try {
+                    const newProfile = await runTransaction(db, async (transaction) => {
+                        const counterDoc = await transaction.get(counterRef);
+                        if (!counterDoc.exists()) {
+                           throw "Counter document does not exist!";
+                        }
+                        const newId = counterDoc.data().lastId + 1;
+                        transaction.update(counterRef, { lastId: newId });
+                        const paddedId = String(newId).padStart(3, '0');
+                        const profileData = { profileId: `XY-${paddedId}`, createdAt: serverTimestamp() };
+                        transaction.set(profileRef, profileData);
+                        return profileData;
+                    });
+                    currentUserProfile = newProfile;
+                } catch (e) {
+                    console.error("Profile creation failed: ", e);
+                }
+            }
+            document.getElementById('profile-id-display').textContent = currentUserProfile?.profileId || 'Gagal Memuat';
+        }
+
+
         // --- Logika Sesi Aktif & Countdown ---
         function updateSessionUI(slotId, data) {
             const sessionElement = document.getElementById(`session-${slotId}`);
@@ -649,53 +713,56 @@
 
             if (countdownIntervals[slotId]) clearInterval(countdownIntervals[slotId]);
 
-            // Update status di halaman rental
             if (statusElement) {
                 statusElement.innerHTML = data && data.isActive 
                     ? `<span class="text-red-400 font-semibold">PC ${slotId.slice(-1)}: Digunakan</span>`
                     : `<span class="text-green-400 font-semibold">PC ${slotId.slice(-1)}: Tersedia</span>`;
             }
 
-            // Update UI di halaman home
             if (!data || !data.isActive) {
                 sessionElement.innerHTML = `
                     <h4 class="text-xl font-bold text-white mb-2">PC Slot ${slotId.slice(-1)}</h4>
                     <p class="text-lg text-green-400 font-semibold">Tersedia</p>`;
                 return;
             }
+            
+            let userSpecificElements = '';
+            const isMySession = data.userId === currentUserId;
+            if (isMySession) {
+                userSpecificElements = `
+                    <p class="text-xs text-blue-400 font-semibold mb-3">(Ini Sesi Anda)</p>
+                    <button class="play-btn w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition btn-press">Mulai Main di HP</button>`;
+            }
 
-            if (data.userId === currentUserId) {
-                // Sesi milik pengguna ini
-                sessionElement.innerHTML = `
-                    <h4 class="text-xl font-bold text-white mb-2">PC Slot ${slotId.slice(-1)} (Sesi Anda)</h4>
-                    <p class="text-gray-300 mb-1">Paket: <span class="font-bold">${data.packageName}</span></p>
-                    <p id="countdown-${slotId}" class="text-2xl font-bold text-yellow-400 my-3">Menghitung...</p>
-                    <button class="play-btn w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition btn-press">Mulai Main di HP</button>
+            sessionElement.innerHTML = `
+                <div class="flex justify-between items-baseline">
+                    <h4 class="text-xl font-bold text-white">PC Slot ${slotId.slice(-1)}</h4>
+                    <p id="countdown-${slotId}" class="text-lg font-bold text-yellow-400">Menghitung...</p>
+                </div>
+                <p class="text-gray-400 text-sm mt-1">Status: <span class="font-semibold text-red-400">Sedang Digunakan</span></p>
+                <div class="mt-4">${userSpecificElements}</div>
                 `;
+
+            if (isMySession) {
                 sessionElement.querySelector('.play-btn').addEventListener('click', () => {
-                    // Ganti 'parsec://' dengan deeplink aplikasi Anda
                     window.location.href = 'parsec://';
                 });
-                startCountdown(slotId, data.endTime.toDate());
-            } else {
-                // Sesi milik orang lain
-                sessionElement.innerHTML = `
-                    <h4 class="text-xl font-bold text-white mb-2">PC Slot ${slotId.slice(-1)}</h4>
-                    <p class="text-lg text-red-400 font-semibold">Sedang Digunakan</p>`;
             }
+            startCountdown(slotId, data.endTime.toDate());
         }
 
         function startCountdown(slotId, endTime) {
             countdownIntervals[slotId] = setInterval(() => {
                 const now = new Date();
                 const distance = endTime.getTime() - now.getTime();
+                const countdownEl = document.getElementById(`countdown-${slotId}`);
                 
                 if (distance < 0) {
                     clearInterval(countdownIntervals[slotId]);
-                    const countdownEl = document.getElementById(`countdown-${slotId}`);
                     if (countdownEl) countdownEl.textContent = "Sesi Selesai";
-                    // Reset slot di Firebase (opsional, Cloud Function lebih baik)
-                    updateDoc(doc(db, "active_sessions", `pc_${slotId}`), { isActive: false, userId: null, packageName: null, startTime: null, endTime: null });
+                    if(document.getElementById(`session-${slotId}`).querySelector('.play-btn')) {
+                       updateDoc(doc(db, "active_sessions", `pc_${slotId}`), { isActive: false, userId: null, packageName: null, startTime: null, endTime: null });
+                    }
                     return;
                 }
 
@@ -703,10 +770,8 @@
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 
-                const countdownEl = document.getElementById(`countdown-${slotId}`);
                 if (countdownEl) {
-                    countdownEl.textContent = 
-                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    countdownEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 }
             }, 1000);
         }
@@ -773,8 +838,8 @@
                 return;
             }
             waError.classList.add('hidden');
+            closeRentalModal();
 
-            // Cek slot tersedia
             const slot1Ref = doc(db, "active_sessions", "pc_slot_1");
             const slot2Ref = doc(db, "active_sessions", "pc_slot_2");
             const [slot1Snap, slot2Snap] = await Promise.all([getDoc(slot1Ref), getDoc(slot2Ref)]);
@@ -784,8 +849,14 @@
             else if (slot2Snap.exists() && !slot2Snap.data().isActive) availableSlotId = 'pc_slot_2';
             
             if (!availableSlotId) {
-                showNotification('Semua slot PC sedang penuh!', true);
-                closeRentalModal();
+                // Logika Antrian
+                try {
+                    await addDoc(collection(db, "waiting_list"), { userId: currentUserId, profileId: currentUserProfile?.profileId, timestamp: serverTimestamp() });
+                    showNotification('Semua slot penuh! Anda telah ditambahkan ke antrian.');
+                    navigateTo('queue-section');
+                } catch(e) {
+                     showNotification('Gagal masuk antrian. Coba lagi.', true);
+                }
                 return;
             }
 
@@ -793,24 +864,17 @@
             const endTime = new Date(startTime.getTime() + jam * 60 * 60 * 1000);
 
             try {
-                // Update sesi aktif
                 await updateDoc(doc(db, "active_sessions", availableSlotId), {
-                    isActive: true,
-                    userId: currentUserId,
-                    packageName: paket,
-                    startTime: Timestamp.fromDate(startTime),
-                    endTime: Timestamp.fromDate(endTime)
+                    isActive: true, userId: currentUserId, packageName: paket, 
+                    startTime: Timestamp.fromDate(startTime), endTime: Timestamp.fromDate(endTime)
                 });
-                // Tambah ke riwayat transaksi
                 await addDoc(collection(db, "transactions"), {
-                    userId: currentUserId, item: paket, billingId: digits, status: "Berhasil", type: "Sewa PC", timestamp: serverTimestamp()
+                    userId: currentUserId, profileId: currentUserProfile?.profileId, item: paket, billingId: digits, status: "Berhasil", type: "Sewa PC", timestamp: serverTimestamp()
                 });
                 showNotification('Sesi berhasil dimulai!');
-                const message = `Halo kall, saya sewa *${paket}* DI *${availableSlotId.replace(/_/g, ' ')}*. \nBilling : *${digits}*`;
+                const message = `Halo XyCloud, saya sewa *${paket}* di *${availableSlotId.replace(/_/g, ' ')}*. \nBilling ID: *${digits}* \nProfil ID: ${currentUserProfile?.profileId}`;
                 window.open(`https://api.whatsapp.com/send?phone=${userPhoneNumber}&text=${encodeURIComponent(message)}`, '_blank');
-                closeRentalModal();
             } catch (e) {
-                console.error("Error starting session: ", e);
                 showNotification('Gagal memulai sesi, coba lagi.', true);
             }
         });
@@ -848,12 +912,11 @@
                 emailError.classList.add('hidden');
                  try {
                     await addDoc(collection(db, "transactions"), {
-                        userId: currentUserId, item: item, email: email, status: "Pending", type: "Beli Akun", timestamp: serverTimestamp()
+                        userId: currentUserId, profileId: currentUserProfile?.profileId, item: item, email: email, status: "Pending", type: "Beli Akun", timestamp: serverTimestamp()
                     });
                     showNotification('Pesanan berhasil disimpan!');
                     closeOrderModal();
                 } catch (e) {
-                    console.error("Error adding document: ", e);
                     showNotification('Gagal menyimpan pesanan.', true);
                 }
             } else {
@@ -873,7 +936,7 @@
             }, 3000);
         }
         
-        // --- Logika Riwayat Transaksi ---
+        // --- Logika Riwayat & Antrian ---
         const transactionList = document.getElementById('transaction-list');
         const noTransactionMsg = document.getElementById('no-transaction-msg');
         
@@ -906,6 +969,30 @@
             });
         }
         
+        const queueLoading = document.getElementById('queue-loading');
+        const queuePositionEl = document.getElementById('queue-position');
+        const notInQueueEl = document.getElementById('not-in-queue');
+        
+        function loadQueueStatus() {
+            if (!currentUserId) return;
+            const q = query(collection(db, "waiting_list"), orderBy("timestamp", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                queueLoading.classList.add('hidden');
+                const waitingUsers = snapshot.docs.map(doc => doc.data().userId);
+                const myPosition = waitingUsers.indexOf(currentUserId);
+
+                if (myPosition !== -1) {
+                    notInQueueEl.classList.add('hidden');
+                    queuePositionEl.classList.remove('hidden');
+                    queuePositionEl.querySelector('p:last-child').textContent = myPosition + 1;
+                } else {
+                    queuePositionEl.classList.add('hidden');
+                    notInQueueEl.classList.remove('hidden');
+                }
+            });
+        }
+        
         // --- Logika Accordion FAQ ---
         const faqItems = document.querySelectorAll('.faq-item');
         faqItems.forEach(item => {
@@ -919,4 +1006,61 @@
     </script>
 </body>
 </html>
+```
+
+---
+
+### **PENTING: 2 Setup Terakhir di Firebase**
+
+Agar sistem profil dan antrian ini berfungsi, Anda perlu melakukan **dua hal terakhir** di Firebase Console:
+
+**1. Buat Dokumen Counter untuk ID Profil:**
+* Buka **Firestore Database**.
+* Buat *collection* baru dengan nama `metadata`.
+* Di dalamnya, buat *document* baru dengan *Document ID* `userCounter`.
+* Tambahkan satu *field* di dalam `userCounter`:
+    * **Field name:** `lastId`
+    * **Type:** `number`
+    * **Value:** `0`
+* Klik **Save**. Ini adalah "nomor awal" untuk ID Profil Anda.
+
+**2. Perbarui Aturan Keamanan (Security Rules):**
+* Pergi ke tab **Rules** di Firestore.
+* Ganti semua aturan yang ada dengan kode di bawah ini. Kode ini menambahkan izin untuk koleksi `users` dan `metadata`.
+
+    ```javascript
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+    
+        match /active_sessions/{sessionId} {
+          allow read: if true;
+          allow write: if request.auth != null;
+        }
+    
+        match /transactions/{transactionId} {
+          allow read: if request.auth.uid == resource.data.userId;
+          allow create: if request.auth != null;
+        }
+        
+        match /waiting_list/{waitId} {
+          allow read: if true;
+          allow create: if request.auth != null;
+          allow delete: if false; 
+        }
+
+        // ATURAN BARU UNTUK PROFIL
+        match /users/{userId} {
+          allow read: if request.auth.uid == userId;
+          allow create: if request.auth.uid == userId;
+        }
+
+        // ATURAN BARU UNTUK COUNTER
+        match /metadata/userCounter {
+          allow read: if request.auth != null;
+          allow write: if request.auth != null; // Untuk transaksi update
+        }
+      }
+    }
+    
 
