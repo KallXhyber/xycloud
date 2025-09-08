@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XyCloud - Rental PC & Toko Akun FiveM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                linear-gradient(rgba(13, 17, 23, 0.97), rgba(13, 17, 23, 0.97)), 
+                url('https://images.unsplash.com/photo-1611042553365-94c03545a278?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #C9D1D9;
+        }
+        .main-nav-btn {
+            padding: 10px 15px; /* Sedikit dikecilkan agar muat */
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s, color 0.3s;
+            color: #a0aec0;
+            font-size: 0.85rem; /* Sedikit dikecilkan agar muat */
+        }
+        .main-nav-btn:hover {
+            background-color: #161B22;
+            color: white;
+        }
+        .main-nav-active {
+            background-color: #1F6FEB;
+            color: white !important;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #161B22; }
+        ::-webkit-scrollbar-thumb { background: #1F6FEB; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+        .faq-item .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+        .faq-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* --- Animasi --- */
+        .animated-gradient-text {
+            background: linear-gradient(90deg, #1F6FEB, #2563eb, #3b82f6, #60a5fa, #3b82f6, #2563eb, #1F6FEB);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-flow 5s linear infinite;
+        }
+        header h1 {
+            text-shadow: 0 2px 20px rgba(60, 130, 250, 0.5);
+            letter-spacing: 2px;
+        }
+
+        @keyframes gradient-flow {
+            0% { background-position: 200% center; }
+            100% { background-position: 0% center; }
+        }
+
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .interactive-card:hover {
+            box-shadow: 0 0 15px rgba(31, 111, 235, 0.4), 0 0 5px rgba(31, 111, 235, 0.3);
+        }
+        
+        .interactive-card-green:hover {
+             box-shadow: 0 0 15px rgba(22, 163, 74, 0.4), 0 0 5px rgba(22, 163, 74, 0.3);
+        }
+
+        .btn-press:active {
+            transform: scale(0.97);
+            transition: transform 0.1s;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .spinner {
+          animation: spin 1s linear infinite;
+        }
+        /* Style for number input to hide arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+        .tutorial-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .tutorial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+        }
+        #chat-box {
+            scroll-behavior: smooth;
+        }
+        .page-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem; /* 12px */
+        }
+        .profile-tab {
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.3s, color 0.3s;
+        }
+        .profile-tab-active {
+            border-color: #1F6FEB;
+            color: white;
+        }
+        .message-reply-quote {
+            padding-left: 10px;
+            border-left: 2px solid #3b82f6; /* blue-600 */
+            margin-bottom: 6px;
+            opacity: 0.8;
+        }
+        audio::-webkit-media-controls-panel {
+          background-color: #374151; /* gray-700 */
+        }
+        audio::-webkit-media-controls-play-button,
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display,
+        audio::-webkit-media-controls-timeline,
+        audio::-webkit-media-controls-volume-slider {
+            filter: invert(1);
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Container Utama -->
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3">
+                <i data-lucide="cloud" class="w-12 h-12 text-blue-500"></i>
+                <h1 class="text-5xl font-black uppercase tracking-wider text-white">
+                    <span class="animated-gradient-text">XyCloud</span>
+                </h1>
+            </div>
+            <p class="text-gray-400 mt-2 text-lg">Platform Rental PC & Akun Game Terpercaya</p>
+        </header>
+
+        <!-- Navigasi Utama -->
+        <nav class="flex flex-wrap justify-center mb-12 bg-gray-900/50 backdrop-blur-sm p-1.5 rounded-xl max-w-5xl mx-auto border border-gray-700">
+            <button class="main-nav-btn" data-page="home-section">Home</button>
+            <button class="main-nav-btn" data-page="rental-section">Rental PC</button>
+            <button class="main-nav-btn" data-page="store-section">Toko Akun</button>
+            <button class="main-nav-btn" data-page="about-section">Tentang</button>
+            <button class="main-nav-btn" data-page="tutorial-section">Tutorial</button>
+            <button class="main-nav-btn" data-page="community-section">Chat</button>
+            <button class="main-nav-btn" data-page="leaderboard-section">Leaderboard</button>
+            <button class="main-nav-btn" data-page="queue-section">Antrian</button>
+            <button class="main-nav-btn" data-page="trust-section">Riwayat</button>
+            <button class="main-nav-btn" data-page="profile-section">Profil</button>
+            <button class="main-nav-btn" data-page="faq-section">FAQ</button>
+        </nav>
+
+        <!-- Konten Section -->
+        <main>
+            <!-- Halaman Home -->
+            <section id="home-section" class="page-section text-center">
+                 <h2 class="page-title text-4xl font-bold text-white mb-4 fade-in-up"><i data-lucide="home"></i>Main Game Tanpa Batas</h2>
+                 <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-8 fade-in-up" style="transition-delay: 100ms;">Sewa PC dengan spesifikasi tertinggi untuk pengalaman gaming terbaik, atau beli akun siap pakai untuk langsung terjun ke dalam permainan.</p>
+                 
+                 <!-- Sesi Aktif -->
+                <div id="active-session-container" class="mb-12">
+                     <h3 class="page-title text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;"><i data-lucide="activity"></i>Status Sesi PC</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <!-- Slot 1 -->
+                         <div id="session-slot-1" class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 300ms;">
+                            <h4 class="page-title text-xl font-bold text-white mb-2"><i data-lucide="server"></i> PC - 1B</h4>
+                            <p class="text-lg text-green-400 font-semibold">Tersedia</p>
+                         </div>
+                         <!-- Slot 2 -->
+                         <div id="session-slot-2" class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 400ms;">
+                            <h4 class="page-title text-xl font-bold text-white mb-2"><i data-lucide="server"></i> PC - 2A</h4>
+                            <p class="text-lg text-green-400 font-semibold">Tersedia</p>
+                         </div>
+                     </div>
+                </div>
+
+                 <div id="home-cta-buttons" class="flex justify-center gap-4 fade-in-up" style="transition-delay: 500ms;">
+                     <button id="home-cta-rental-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition btn-press">Lihat Paket Sewa</button>
+                     <button class="nav-to-store bg-gray-700 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-600 transition btn-press">Beli Akun Game</button>
+                 </div>
+            </section>
+
+            <!-- Halaman Rental PC -->
+            <section id="rental-section" class="page-section hidden">
+                <h2 class="page-title text-3xl font-bold text-white mb-8 fade-in-up"><i data-lucide="cpu"></i>Pilih Paket Sewa PC</h2>
+                <!-- Status Slot PC -->
+                <div class="bg-[#161B22] border border-gray-700 rounded-xl p-6 mb-8 text-center fade-in-up" style="transition-delay: 100ms;">
+                    <h3 class="text-xl font-bold text-white mb-4">Status Slot PC</h3>
+                    <div class="flex justify-center gap-8">
+                        <div id="status-slot-1" class="flex items-center gap-2"><i data-lucide="server"></i><span>PC - 1B: Memuat...</span></div>
+                        <div id="status-slot-2" class="flex items-center gap-2"><i data-lucide="server"></i><span>PC - 2A: Memuat...</span></div>
+                    </div>
+                </div>
+
+                <!-- Paket Reguler -->
+                <h3 class="text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;">Paket Reguler</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    <!-- Kartu Paket Custom -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 300ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-2">Paket Custom</h3>
+                            <div class="mb-4">
+                                <label for="custom-hours-input" class="text-sm text-gray-400 mb-2 block">Pilih Jumlah Jam</label>
+                                <div class="flex items-center justify-center">
+                                    <button id="custom-hours-minus" class="bg-gray-700 hover:bg-gray-600 rounded-l-md p-2 transition btn-press">-</button>
+                                    <input type="number" id="custom-hours-input" value="1" min="1" class="w-16 bg-[#0D1117] text-white text-center font-bold text-lg focus:outline-none">
+                                    <button id="custom-hours-plus" class="bg-gray-700 hover:bg-gray-600 rounded-r-md p-2 transition btn-press">+</button>
+                                </div>
+                            </div>
+                            <p id="custom-price" class="text-blue-400 font-semibold text-3xl mb-4 text-center">Rp 4.000</p>
+                            <button id="custom-rental-btn" class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Custom" data-jam="1">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                    <!-- Kartu Paket 12 Jam -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 400ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket 12 Jam</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 25.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">Bebas start jam berapa</p>
+                             <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Reguler 12 Jam" data-jam="12">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                    <!-- Kartu Paket 1 Hari -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 500ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket 1 Hari</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 35.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">24 Jam Penuh</p>
+                             <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Reguler 1 Hari" data-jam="24">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paketan Siang/Malam -->
+                <h3 class="text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;">Paketan (Siang/Malam)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <!-- Kartu Paket Siang -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 300ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket Siang</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 16.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">Berlaku 06:00 - 18:00</p>
+                            <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Siang (06:00 - 18:00)" data-jam="12">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                    <!-- Kartu Paket Malam -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 400ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket Malam</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 20.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">Berlaku 18:00 - 06:00</p>
+                             <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Malam (18:00 - 06:00)" data-jam="12">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paket Simpan Waktu -->
+                <h3 class="text-2xl font-bold text-white mb-6 text-center border-b-2 border-blue-500 pb-2 fade-in-up" style="transition-delay: 200ms;">Paket Bisa Simpan Waktu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Kartu Paket Simpan 12 Jam -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 300ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket 12 Jam</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 35.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">Hubungi admin via WA untuk pause/resume.</p>
+                            <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Simpan Waktu 12 Jam" data-jam="12">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                    <!-- Kartu Paket Simpan 1 Hari -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up interactive-card" style="transition-delay: 400ms;">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-white mb-1">Paket 1 Hari</h3>
+                            <p class="text-blue-400 font-semibold text-3xl mb-4">Rp 45.000</p>
+                            <p class="text-sm text-gray-400 -mt-2 mb-4">Hubungi admin via WA untuk pause/resume.</p>
+                             <button class="rental-btn w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press" data-paket="Paket Simpan Waktu 1 Hari" data-jam="24">Sewa Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Halaman Toko Akun -->
+            <section id="store-section" class="page-section hidden">
+                 <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 fade-in-up">
+                    <h2 class="page-title text-3xl font-bold text-white"><i data-lucide="shopping-cart"></i>Akun Rockstar Games</h2>
+                    <div class="relative w-full md:w-auto">
+                        <p class="text-gray-400">Stok Selalu Tersedia</p>
+                    </div>
+                </div>
+                <div class="flex justify-center fade-in-up" style="transition-delay: 100ms;">
+                    <!-- Kartu Akun Rockstar -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl overflow-hidden shadow-lg hover:border-green-500 transition-all duration-300 transform hover:-translate-y-1 w-full max-w-sm interactive-card-green">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="text-2xl font-bold text-white">Akun Rockstar Games</h3>
+                                <span class="bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full">Tersedia</span>
+                            </div>
+                            <p class="text-green-400 font-semibold text-3xl mb-4">Rp 25.000</p>
+                            <ul class="space-y-3 text-gray-300 mb-6">
+                                <li class="flex items-center gap-3"><i data-lucide="check-circle" class="text-green-500"></i>Lisensi GTA V Original</li>
+                                <li class="flex items-center gap-3"><i data-lucide="user-plus" class="text-green-500"></i>Akun Baru & Fresh</li>
+                                <li class="flex items-center gap-3"><i data-lucide="play-circle" class="text-green-500"></i>Siap untuk FiveM</li>
+                            </ul>
+                            <button class="order-btn w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-all duration-300 btn-press" data-type="Pembelian" data-item="Akun Rockstar Games (GTA V)">Beli Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Halaman Tentang Kami -->
+            <section id="about-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="page-title text-4xl font-bold text-white mb-4 fade-in-up"><i data-lucide="info"></i>Tentang XyCloud</h2>
+                <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-12 fade-in-up" style="transition-delay: 100ms;">Misi kami adalah mendobrak batasan gaming. Kami percaya semua orang berhak merasakan pengalaman bermain game di PC spesifikasi tertinggi tanpa harus memiliki hardware yang mahal. XyCloud hadir untuk memberikan solusi rental PC cloud yang mudah, cepat, dan terjangkau.</p>
+                
+                <!-- Spesifikasi PC -->
+                 <h3 class="page-title text-3xl font-bold text-white mb-8 fade-in-up" style="transition-delay: 200ms;"><i data-lucide="server"></i>Spesifikasi PC Kami</h3>
+                 <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg mb-12 text-left fade-in-up" style="transition-delay: 300ms;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                             <h4 class="text-xl font-bold text-white mb-4">Komponen Utama</h4>
+                             <ul class="space-y-3">
+                                <li class="flex items-center gap-3"><i data-lucide="cpu" class="text-blue-400"></i> 12 Core CPU</li>
+                                <li class="flex items-center gap-3"><i data-lucide="memory-stick" class="text-blue-400"></i> 20 GB RAM</li>
+                                <li class="flex items-center gap-3"><i data-lucide="gpu" class="text-blue-400"></i> NVIDIA RTX 3060 Ti</li>
+                             </ul>
+                        </div>
+                        <div>
+                             <h4 class="text-xl font-bold text-white mb-4">Cocok Untuk</h4>
+                             <ul class="space-y-3">
+                                <li class="flex items-center gap-3"><i data-lucide="film" class="text-green-400"></i> Editing</li>
+                                <li class="flex items-center gap-3"><i data-lucide="box" class="text-green-400"></i> Rendering</li>
+                                <li class="flex items-center gap-3"><i data-lucide="code" class="text-green-400"></i> Coding</li>
+                                <li class="flex items-center gap-3"><i data-lucide="video" class="text-green-400"></i> Live Streaming</li>
+                             </ul>
+                        </div>
+                    </div>
+                 </div>
+
+
+                <h3 class="page-title text-3xl font-bold text-white mb-8 fade-in-up" style="transition-delay: 400ms;"><i data-lucide="sparkles"></i>Kenapa Memilih Kami?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <!-- Point 1 -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 500ms;">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="zap" class="w-10 h-10 text-blue-500"></i>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Performa Terbaik</h4>
+                                <p class="text-gray-400">Kami hanya menggunakan hardware terkini untuk memastikan gameplay yang lancar tanpa lag.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Point 2 -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 600ms;">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="shield-check" class="w-10 h-10 text-blue-500"></i>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Keamanan Terjamin</h4>
+                                <p class="text-gray-400">Setiap sesi rental akan di-reset total, menjamin privasi dan keamanan data Anda.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Point 3 -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 700ms;">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="dollar-sign" class="w-10 h-10 text-blue-500"></i>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Harga Terjangkau</h4>
+                                <p class="text-gray-400">Nikmati PC sultan dengan harga yang ramah di kantong, mulai dari 4 ribuan.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Point 4 -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 800ms;">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="mail" class="w-10 h-10 text-blue-500"></i>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Dukungan Cepat</h4>
+                                <p class="text-gray-400">Hubungi kami di haekalsaputra01h@gmail.com jika ada kendala.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Halaman Tutorial -->
+            <section id="tutorial-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="page-title text-4xl font-bold text-white mb-8 fade-in-up"><i data-lucide="book-open"></i>Seputar Tutorial</h2>
+                
+                <div class="bg-[#161B22] p-8 border border-gray-700 rounded-lg mb-12 text-center fade-in-up" style="transition-delay: 100ms;">
+                    <h3 class="text-2xl font-bold text-white mb-4">Gabung Komunitas Kami!</h3>
+                    <p class="text-gray-400 mb-6">Dapatkan info terbaru, tips, dan bantuan dari sesama pengguna di grup WhatsApp kami.</p>
+                    <a href="https://chat.whatsapp.com/CJ0s93ohwgR7UuI2BMdp0x" target="_blank" class="inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition btn-press">
+                        <i data-lucide="message-circle" class="inline-block -mt-1 mr-2"></i> Bergabung ke Grup WhatsApp
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                    <!-- Tutorial Card: Main FiveM -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up relative overflow-hidden" style="transition-delay: 200ms;">
+                        <div class="opacity-50">
+                            <i data-lucide="gamepad-2" class="w-10 h-10 text-blue-500 mb-4"></i>
+                            <h4 class="text-xl font-bold text-white">Tutorial Main FiveM</h4>
+                            <p class="text-gray-400 mt-2">Panduan lengkap untuk memulai petualangan Anda di server FiveM.</p>
+                        </div>
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span class="font-bold text-white bg-yellow-600/50 border border-yellow-500 px-4 py-1 rounded-full">Segera Hadir</span>
+                        </div>
+                    </div>
+                    <!-- Tutorial Card: Discord -->
+                    <a href="https://youtu.be/KAuhg-6kXhY?si=8PiS7mxwtSY4QmxP" target="_blank" class="tutorial-card bg-[#161B22] p-6 border border-gray-700 rounded-lg block fade-in-up" style="transition-delay: 300ms;">
+                        <i data-lucide="message-square" class="w-10 h-10 text-blue-500 mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">Tutorial Buat Akun Discord</h4>
+                        <p class="text-gray-400 mt-2">Wajib punya untuk komunikasi saat bermain di server roleplay.</p>
+                    </a>
+                     <!-- Tutorial Card: Steam -->
+                    <a href="https://youtu.be/4kPkifr2ZUI?si=jbhoi6RHUxpORSoa" target="_blank" class="tutorial-card bg-[#161B22] p-6 border border-gray-700 rounded-lg block fade-in-up" style="transition-delay: 400ms;">
+                        <i data-lucide="steam" class="w-10 h-10 text-blue-500 mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">Tutorial Buat Akun Steam</h4>
+                        <p class="text-gray-400 mt-2">Platform utama untuk memiliki game GTA V dan game lainnya.</p>
+                    </a>
+                     <!-- Tutorial Card: CFX.RE -->
+                    <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up relative overflow-hidden" style="transition-delay: 500ms;">
+                         <div class="opacity-50">
+                            <i data-lucide="link" class="w-10 h-10 text-blue-500 mb-4"></i>
+                            <h4 class="text-xl font-bold text-white">Tutorial Buat Akun CFX.RE</h4>
+                            <p class="text-gray-400 mt-2">Penting untuk menghubungkan progres game FiveM Anda.</p>
+                        </div>
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span class="font-bold text-white bg-yellow-600/50 border border-yellow-500 px-4 py-1 rounded-full">Segera Hadir</span>
+                        </div>
+                    </div>
+                     <!-- Tutorial Card: Mic Deeplink -->
+                    <a href="https://youtu.be/0PY7c_1FaoM?si=uyZvwTUMjZiU9BaE" target="_blank" class="tutorial-card bg-[#161B22] p-6 border border-gray-700 rounded-lg block fade-in-up" style="transition-delay: 600ms;">
+                        <i data-lucide="mic" class="w-10 h-10 text-blue-500 mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">Tutorial On Mic via Deeplink</h4>
+                        <p class="text-gray-400 mt-2">Cara mengaktifkan mikrofon Anda saat bermain melalui HP.</p>
+                    </a>
+                </div>
+            </section>
+            
+            <!-- Halaman Leaderboard -->
+            <section id="leaderboard-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="page-title text-4xl font-bold text-white mb-8 fade-in-up"><i data-lucide="trophy"></i>Leaderboard Waktu Sewa</h2>
+                <div class="bg-[#161B22] p-6 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                    <div id="leaderboard-list" class="space-y-3">
+                         <p id="leaderboard-loading" class="text-center text-gray-400">Memuat peringkat...</p>
+                        <!-- Peringkat akan dimuat di sini -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Halaman Komunitas (Chat) -->
+             <section id="community-section" class="page-section hidden max-w-4xl mx-auto">
+                <h2 class="page-title text-4xl font-bold text-white mb-8 fade-in-up text-center"><i data-lucide="messages-square"></i>Live Chat Komunitas</h2>
+                <div class="bg-[#161B22] border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                    <div id="chat-box" class="h-96 overflow-y-auto p-4 space-y-4">
+                        <!-- Pesan chat akan dimuat di sini -->
+                    </div>
+                    <div id="reply-preview" class="hidden p-3 border-t border-b border-gray-700 bg-gray-800/50">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-blue-400">Membalas <b id="reply-name"></b></p>
+                                <p id="reply-text" class="text-sm text-gray-300 truncate"></p>
+                            </div>
+                            <button id="cancel-reply-btn"><i data-lucide="x" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-gray-700 flex gap-2 items-center">
+                        <input type="text" id="chat-input" placeholder="Ketik pesan Anda..." class="flex-grow bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <button id="send-chat-btn" class="bg-green-600 text-white font-bold p-2.5 rounded-lg hover:bg-green-700 transition btn-press">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Halaman Antrian -->
+            <section id="queue-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="page-title text-4xl font-bold text-white mb-8 fade-in-up"><i data-lucide="users"></i>Status Antrian Anda</h2>
+                <div id="queue-status-container" class="bg-[#161B22] p-8 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                    <!-- Status antrian akan dimuat di sini -->
+                    <div id="queue-loading">
+                        <i data-lucide="loader-2" class="spinner w-12 h-12 mx-auto text-blue-500"></i>
+                        <p class="mt-4 text-gray-400">Memuat status antrian...</p>
+                    </div>
+                    <div id="queue-position" class="hidden">
+                        <p class="text-xl text-gray-300 mb-2">Posisi Anda saat ini:</p>
+                        <p class="text-5xl font-bold text-yellow-400"></p>
+                    </div>
+                    <div id="not-in-queue" class="hidden">
+                         <p class="text-xl text-gray-400">Anda tidak berada dalam antrian saat ini. Silakan sewa PC jika slot tersedia.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Halaman Riwayat Transaksi -->
+            <section id="trust-section" class="page-section hidden">
+                <h2 class="page-title text-3xl font-bold text-white text-center mb-12 fade-in-up"><i data-lucide="history"></i>Riwayat Transaksi Anda</h2>
+                <div class="max-w-4xl mx-auto bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 100ms;">
+                    <div id="transaction-list" class="space-y-3">
+                        <!-- Riwayat transaksi dari Firebase akan dimuat di sini -->
+                        <p id="no-transaction-msg" class="text-center text-gray-400">Belum ada transaksi.</p>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Halaman Profil -->
+            <section id="profile-section" class="page-section hidden max-w-4xl mx-auto text-center">
+                <h2 class="page-title text-4xl font-bold text-white mb-8 fade-in-up"><i data-lucide="user-circle"></i>Profil Anda</h2>
+                <div class="bg-[#161B22] p-8 border border-gray-700 rounded-lg fade-in-up mb-8" style="transition-delay: 100ms;">
+                    <div class="w-32 h-32 mx-auto mb-4">
+                        <img id="profile-picture" src="https://source.boringavatars.com/beam/128/default?colors=2563eb,1e40af,3b82f6" class="rounded-full w-full h-full object-cover border-2 border-blue-500">
+                    </div>
+
+                    <p class="text-xl text-gray-300 mb-2">ID Profil Unik Anda:</p>
+                    <p id="profile-id-display" class="text-4xl font-bold text-green-400 mb-6">Memuat...</p>
+                    
+                    <div id="profile-name-display" class="mb-4">
+                        <p class="text-xl text-gray-300">Nama:</p>
+                        <p id="current-name" class="text-3xl font-bold text-white">Anonim</p>
+                    </div>
+
+                    <div id="profile-name-edit" class="hidden">
+                        <input type="text" id="edit-name-input" class="bg-gray-800 text-center border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full max-w-xs mx-auto p-2.5" placeholder="Masukkan nama baru...">
+                        <div class="flex gap-2 justify-center mt-4">
+                             <button id="save-name-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition btn-press">Simpan</button>
+                             <button id="cancel-edit-name-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition btn-press">Batal</button>
+                        </div>
+                    </div>
+                    
+                    <button id="edit-name-btn" class="mt-4 text-blue-400 hover:text-blue-300 underline">Edit Nama</button>
+                </div>
+
+                <div class="bg-[#161B22] p-8 border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 200ms;">
+                     <p class="text-xl text-gray-300 mb-2">Waktu Tersimpan:</p>
+                     <p id="saved-time-display" class="text-4xl font-bold text-yellow-400 mb-6">00:00:00</p>
+                     <button id="use-saved-time-btn" class="hidden bg-yellow-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-yellow-700 transition btn-press">Gunakan Waktu Tersimpan</button>
+                </div>
+            </section>
+
+            <!-- Halaman FAQ -->
+            <section id="faq-section" class="page-section hidden max-w-3xl mx-auto">
+                <h2 class="page-title text-3xl font-bold text-white text-center mb-12 fade-in-up"><i data-lucide="help-circle"></i>Tanya Jawab</h2>
+                <div class="space-y-4">
+                     <div class="faq-item bg-[#161B22] border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 100ms;">
+                        <button class="faq-question w-full flex justify-between items-center p-5 text-left font-semibold text-white">
+                            <span>Bagaimana cara kerja 'Paket Simpan Waktu'?</span>
+                            <i data-lucide="plus" class="faq-icon"></i>
+                        </button>
+                        <div class="faq-answer px-5 pb-5 text-gray-400">
+                            <p>Untuk paket ini, waktu sewa Anda tidak akan hangus. Jika ingin berhenti bermain, cukup hubungi admin via WhatsApp untuk "pause" sesi Anda. Sisa waktu akan disimpan dan bisa dilanjutkan kapan saja dengan menghubungi admin kembali.</p>
+                        </div>
+                    </div>
+                     <div class="faq-item bg-[#161B22] border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 200ms;">
+                        <button class="faq-question w-full flex justify-between items-center p-5 text-left font-semibold text-white">
+                            <span>Bagaimana cara main di HP atau PC?</span>
+                            <i data-lucide="plus" class="faq-icon"></i>
+                        </button>
+                        <div class="faq-answer px-5 pb-5 text-gray-400">
+                            <p>Setelah sesi sewa Anda aktif, akan muncul tombol "Mulai di PC" dan "Mulai di HP" di halaman Home. Pastikan Anda sudah menginstall aplikasi remote desktop (seperti Parsec), lalu klik tombol yang sesuai untuk memulai.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item bg-[#161B22] border border-gray-700 rounded-lg fade-in-up" style="transition-delay: 300ms;">
+                        <button class="faq-question w-full flex justify-between items-center p-5 text-left font-semibold text-white">
+                            <span>Bagaimana saya melihat sisa waktu?</span>
+                            <i data-lucide="plus" class="faq-icon"></i>
+                        </button>
+                        <div class="faq-answer px-5 pb-5 text-gray-400">
+                            <p>Sisa waktu sewa akan selalu ditampilkan di bagian "Status Sesi PC" pada halaman Home selama sesi masih berjalan. Semua pengunjung bisa melihat sisa waktu ini.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Halaman Panel Admin -->
+            <section id="admin-section" class="page-section hidden">
+                 <h2 class="page-title text-3xl font-bold text-white text-center mb-12 fade-in-up"><i data-lucide="sliders-horizontal"></i>Panel Admin</h2>
+                <div class="max-w-7xl mx-auto space-y-8">
+                     <!-- Manajemen Sesi Aktif -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 100ms;">
+                         <h3 class="text-2xl font-bold text-white mb-4">Manajemen Sesi Aktif</h3>
+                         <div id="admin-session-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Sesi aktif akan dimuat di sini -->
+                             <p class="text-gray-400 md:col-span-2 text-center">Tidak ada sesi yang aktif.</p>
+                         </div>
+                    </div>
+
+                    <!-- Manajemen Transaksi Pending -->
+                    <div class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 200ms;">
+                         <h3 class="text-2xl font-bold text-white mb-4">Permintaan Sewa (Pending)</h3>
+                         <div id="admin-pending-list" class="space-y-3">
+                             <p class="text-gray-400 text-center">Tidak ada permintaan sewa.</p>
+                         </div>
+                    </div>
+
+                     <!-- Manajemen Antrian -->
+                     <div class="bg-[#161B22] border border-gray-700 rounded-xl p-6 fade-in-up" style="transition-delay: 300ms;">
+                         <h3 class="text-2xl font-bold text-white mb-4">Manajemen Antrian</h3>
+                         <div id="admin-queue-list" class="space-y-3">
+                             <p class="text-gray-400 text-center">Antrian kosong.</p>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 mt-20 py-8">
+        <div class="container mx-auto px-4 text-center text-gray-500">
+             <div class="mb-6 grid grid-cols-3 md:grid-cols-5 gap-4 max-w-2xl mx-auto text-sm">
+                <a href="#" class="nav-footer hover:text-white transition" data-page="about-section">Tentang</a>
+                <a href="#" class="nav-footer hover:text-white transition" data-page="rental-section">Rental</a>
+                <a href="#" class="nav-footer hover:text-white transition" data-page="tutorial-section">Tutorial</a>
+                <a href="#" class="nav-footer hover:text-white transition" data-page="trust-section">Riwayat</a>
+                <a href="#" class="nav-footer hover:text-white transition md:col-start-2" data-page="faq-section">FAQ</a>
+                 <a href="#" class="nav-footer hover:text-white transition" data-page="community-section">Chat</a>
+                <a href="#" class="nav-footer hover:text-white transition" data-page="leaderboard-section">Leaderboard</a>
+            </div>
+            <p>&copy; 2025 XyCloud. Semua Hak Dilindungi.</p>
+            <p class="text-sm mt-2">Dikembangkan oleh kall | Email: haekalsaputra01h@gmail.com</p>
+            <div class="flex items-center justify-center gap-4 mt-4">
+                 <p id="admin-login-container" class="text-sm hidden"><a href="#" id="admin-login-btn" class="hover:text-white underline">Admin Panel</a></p>
+            </div>
+            <div class="flex justify-center gap-6 mt-4">
+                 <a href="https://tiktok.com/@NAMA_ANDA" target="_blank" class="hover:text-blue-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tiktok"><path d="M12 12a4 4 0 1 0 4 4v-1.5a4.5 4.5 0 1 1-4.5-4.5V12z"/><path d="M12 12a4 4 0 1 0 4 4V8a8 8 0 1 0-8 8"/></svg>
+                </a>
+                <a href="https://instagram.com/NAMA_ANDA" target="_blank" class="hover:text-blue-500 transition"><i data-lucide="instagram"></i></a>
+                <a href="https://youtube.com/@NAMA_ANDA" target="_blank" class="hover:text-blue-500 transition"><i data-lucide="youtube"></i></a>
+                <a href="https://facebook.com/NAMA_ANDA" target="_blank" class="hover:text-blue-500 transition"><i data-lucide="facebook"></i></a>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Modal Sewa PC -->
+    <div id="rental-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0 transition-opacity duration-300">
+        <div id="rental-modal-content" class="bg-[#161B22] border border-gray-700 rounded-2xl p-8 w-full max-w-md mx-auto transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-white">Formulir Sewa</h2>
+                <button id="close-rental-modal-btn" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <div>
+                <p class="mb-4 text-gray-300">Anda memilih <span id="rental-item-name" class="font-bold text-blue-400"></span>.</p>
+                 <div>
+                     <label for="wa-digits" class="block mb-2 text-sm font-medium text-gray-300">4 Digit Terakhir Nomor WA (untuk Billing ID)</label>
+                     <input type="number" id="wa-digits" class="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Contoh: 1234">
+                     <p id="wa-error" class="text-red-500 text-sm mt-1 hidden">Harap isi 4 digit angka.</p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <button id="confirm-rental-btn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 btn-press">Kirim Permintaan Sewa</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Pemesanan Akun -->
+    <div id="order-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0 transition-opacity duration-300">
+        <div id="order-modal-content" class="bg-[#161B22] border border-gray-700 rounded-2xl p-8 w-full max-w-md mx-auto transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="order-modal-title" class="text-3xl font-bold text-white"></h2>
+                <button id="close-order-modal-btn" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <div>
+                <p class="mb-4 text-gray-300">Anda akan melakukan <span id="order-item-type" class="font-bold"></span> untuk item <span id="order-item-name" class="font-bold text-green-400"></span>.</p>
+                 <div>
+                     <label for="email" class="block mb-2 text-sm font-medium text-gray-300">Email untuk pengiriman akun</label>
+                     <input type="email" id="email" class="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="nama@email.com" required>
+                     <p id="email-error" class="text-red-500 text-sm mt-1 hidden">Harap isi email yang valid.</p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <button id="confirm-order-btn" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-all duration-300 btn-press">Konfirmasi Pembelian</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notifikasi Sukses/Gagal -->
+    <div id="notification" class="hidden fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300">
+        Pesanan berhasil disimpan!
+    </div>
+    
+    <!-- Import Firebase SDK -->
+    <script type="module">
+        // Import fungsi yang diperlukan dari Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, onSnapshot, serverTimestamp, query, orderBy, where, updateDoc, Timestamp, runTransaction, setDoc, getDocs, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // =================================================================================
+        // KONFIGURASI FIREBASE ANDA
+        // =================================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXUy_NPBoC4scskd6tRJNoJtR0NRAfTJ8",
+            authDomain: "xycloud-531d2.firebaseapp.com",
+            projectId: "xycloud-531d2",
+            storageBucket: "xycloud-531d2.appspot.com",
+            messagingSenderId: "528538517556",
+            appId: "1:528538517556:web:3bd4ac8f6dbd9ad52c8a61"
+        };
+        // =================================================================================
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserId = null;
+        let currentUserProfile = null;
+        let countdownIntervals = {}; 
+        let notificationTimeout = null;
+        let slotStatus = { 'slot-1': false, 'slot-2': false };
+        let unsubscribeChat = null; // Untuk listener chat
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                await loadOrCreateUserProfile();
+                loadTransactions();
+                loadQueueStatus();
+                loadLeaderboardData();
+                onSnapshot(doc(db, "active_sessions", "pc_slot_1"), (doc) => updateSessionUI('slot-1', 'PC - 1B', doc.data()));
+                onSnapshot(doc(db, "active_sessions", "pc_slot_2"), (doc) => updateSessionUI('slot-2', 'PC - 2A', doc.data()));
+                
+                // Admin Listeners
+                if(currentUserProfile && currentUserProfile.isAdmin) {
+                    onSnapshot(query(collection(db, "transactions"), where("status", "==", "Menunggu Konfirmasi"), orderBy("timestamp", "desc")), (snapshot) => loadAdminPendingTransactions(snapshot));
+                    onSnapshot(query(collection(db, "waiting_list"), orderBy("timestamp", "asc")), (snapshot) => loadAdminQueueList(snapshot));
+                }
+            } else {
+                signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in failed:", error));
+            }
+        });
+
+        // --- Navigasi Halaman & Animasi ---
+        const navButtons = document.querySelectorAll('.main-nav-btn, .nav-footer');
+        const pages = document.querySelectorAll('.page-section');
+        const adminLoginContainer = document.getElementById('admin-login-container');
+        
+        function navigateTo(pageId) {
+             if (pageId === 'community-section' && !unsubscribeChat) {
+                loadChatMessages(); // Mulai listen chat hanya saat halaman chat dibuka pertama kali
+            }
+
+            pages.forEach(page => page.classList.add('hidden'));
+            const targetPage = document.getElementById(pageId);
+            if(targetPage) {
+                 targetPage.classList.remove('hidden');
+                 const animatedElements = targetPage.querySelectorAll('.fade-in-up');
+                animatedElements.forEach(el => el.classList.remove('visible'));
+                setTimeout(() => {
+                    animatedElements.forEach(el => el.classList.add('visible'));
+                }, 10);
+            }
+           
+            navButtons.forEach(btn => {
+                btn.classList.remove('main-nav-active');
+                if (btn.dataset.page === pageId) btn.classList.add('main-nav-active');
+            });
+             window.scrollTo(0, 0);
+        }
+
+        navButtons.forEach(button => button.addEventListener('click', (e) => { e.preventDefault(); navigateTo(button.dataset.page)}));
+        adminLoginContainer.addEventListener('click', (e) => { e.preventDefault(); navigateTo('admin-section'); });
+        document.querySelector('.nav-to-store').addEventListener('click', () => navigateTo('store-section'));
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            requestAnimationFrame(() => navigateTo('home-section'));
+        });
+
+        // --- Logika Profil Pengguna & Admin ---
+        const profileIdDisplay = document.getElementById('profile-id-display');
+        const currentNameDisplay = document.getElementById('current-name');
+        const editNameBtn = document.getElementById('edit-name-btn');
+        const profileNameDisplayDiv = document.getElementById('profile-name-display');
+        const profileNameEditDiv = document.getElementById('profile-name-edit');
+        const editNameInput = document.getElementById('edit-name-input');
+        const saveNameBtn = document.getElementById('save-name-btn');
+        const cancelEditNameBtn = document.getElementById('cancel-edit-name-btn');
+        const savedTimeDisplay = document.getElementById('saved-time-display');
+        const useSavedTimeBtn = document.getElementById('use-saved-time-btn');
+        const profilePicture = document.getElementById('profile-picture');
+
+        async function loadOrCreateUserProfile() {
+            if (!currentUserId) return;
+            const profileRef = doc(db, "users", currentUserId);
+            
+            const unsubscribe = onSnapshot(profileRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    currentUserProfile = docSnap.data();
+                    updateProfileUI(currentUserProfile);
+                    checkAdminStatus();
+                } else {
+                    createUserProfile(profileRef);
+                }
+            });
+        }
+
+        async function createUserProfile(profileRef) {
+             const counterRef = doc(db, "metadata", "userCounter");
+            try {
+                const newProfile = await runTransaction(db, async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    if (!counterDoc.exists()) throw "Counter document does not exist!";
+                    const newId = counterDoc.data().lastId + 1;
+                    transaction.update(counterRef, { lastId: newId });
+                    const paddedId = String(newId).padStart(3, '0');
+                    const profileData = { 
+                        profileId: `XY-${paddedId}`, 
+                        name: `Player-${paddedId}`, 
+                        createdAt: serverTimestamp(),
+                        savedTimeSeconds: 0,
+                        profilePictureUrl: `https://source.boringavatars.com/beam/128/XY-${paddedId}?colors=2563eb,1e40af,3b82f6`
+                    };
+                    transaction.set(profileRef, profileData);
+                    return profileData;
+                });
+                currentUserProfile = newProfile;
+                
+                // Kirim pesan selamat datang dari Bot setelah profil benar-benar dibuat
+                 await addDoc(collection(db, "chat_messages"), {
+                    userId: "system-bot", profileId: "BOT", name: "XyCloud Bot",
+                    text: `Selamat datang di XyCloud, ${currentUserProfile.name}! Mari kita ramaikan komunitas!`,
+                    timestamp: serverTimestamp()
+                });
+
+            } catch (e) {
+                console.error("Profile creation failed: ", e);
+            }
+        }
+        
+        function updateProfileUI(profile) {
+            profileIdDisplay.textContent = profile?.profileId || 'Gagal Memuat';
+            currentNameDisplay.textContent = profile?.name || 'Anonim';
+            const savedSeconds = profile?.savedTimeSeconds || 0;
+            savedTimeDisplay.textContent = formatSecondsToHHMMSS(savedSeconds);
+            if (savedSeconds > 0) {
+                useSavedTimeBtn.classList.remove('hidden');
+            } else {
+                useSavedTimeBtn.classList.add('hidden');
+            }
+            if (profile?.profilePictureUrl) {
+                profilePicture.src = profile.profilePictureUrl;
+            } else {
+                 profilePicture.src = `https://source.boringavatars.com/beam/128/${profile.profileId}?colors=2563eb,1e40af,3b82f6`;
+            }
+        }
+        
+        editNameBtn.addEventListener('click', () => {
+            profileNameDisplayDiv.classList.add('hidden');
+            editNameBtn.classList.add('hidden');
+            profileNameEditDiv.classList.remove('hidden');
+            editNameInput.value = currentNameDisplay.textContent;
+        });
+        
+        cancelEditNameBtn.addEventListener('click', () => {
+             profileNameDisplayDiv.classList.remove('hidden');
+            editNameBtn.classList.remove('hidden');
+            profileNameEditDiv.classList.add('hidden');
+        });
+
+        saveNameBtn.addEventListener('click', async () => {
+            const newName = editNameInput.value.trim();
+            if (newName && newName.length > 2) {
+                const profileRef = doc(db, "users", currentUserId);
+                await updateDoc(profileRef, { name: newName });
+                cancelEditNameBtn.click();
+                showNotification('Nama berhasil diperbarui!');
+            } else {
+                showNotification('Nama minimal 3 karakter.', true);
+            }
+        });
+
+        async function checkAdminStatus() {
+             if (!currentUserProfile) return;
+            const adminConfigRef = doc(db, "metadata", "adminConfig");
+            const docSnap = await getDoc(adminConfigRef);
+            if (docSnap.exists() && docSnap.data().adminProfileId === currentUserProfile.profileId) {
+                currentUserProfile.isAdmin = true;
+                adminLoginContainer.classList.remove('hidden');
+            } else {
+                currentUserProfile.isAdmin = false;
+                adminLoginContainer.classList.add('hidden');
+            }
+        }
+
+        // --- Logika Tombol Cerdas Home ---
+        const homeRentalBtn = document.getElementById('home-cta-rental-btn');
+        
+        function updateHomeCTA() {
+            if (slotStatus['slot-1'] && slotStatus['slot-2']) {
+                homeRentalBtn.textContent = 'Lihat Halaman Antrian';
+                homeRentalBtn.onclick = () => navigateTo('queue-section');
+            } else {
+                homeRentalBtn.textContent = 'Lihat Paket Sewa';
+                 homeRentalBtn.onclick = () => navigateTo('rental-section');
+            }
+        }
+
+
+        // --- Logika Sesi Aktif & Countdown ---
+        function updateSessionUI(slotId, slotName, data) {
+            const sessionElement = document.getElementById(`session-${slotId}`);
+            const statusElement = document.getElementById(`status-${slotId}`);
+            
+            slotStatus[slotId] = data?.isActive || false;
+            updateHomeCTA();
+
+            if (countdownIntervals[slotId]) clearInterval(countdownIntervals[slotId]);
+            if(notificationTimeout && data?.userId === currentUserId) clearTimeout(notificationTimeout);
+
+            if (statusElement) {
+                statusElement.innerHTML = `<i data-lucide="server"></i><span>${slotName}: ${data && data.isActive ? '<span class="text-red-400 font-semibold">Digunakan</span>' : '<span class="text-green-400 font-semibold">Tersedia</span>'}</span>`;
+            }
+
+            if (!data || !data.isActive) {
+                sessionElement.innerHTML = `
+                    <h4 class="page-title text-xl font-bold text-white mb-2"><i data-lucide="server"></i> ${slotName}</h4>
+                    <p class="text-lg text-green-400 font-semibold">Tersedia</p>`;
+                 lucide.createIcons();
+                return;
+            }
+            
+            let userSpecificElements = '';
+            const isMySession = data.userId === currentUserId;
+            if (isMySession) {
+                userSpecificElements = `
+                    <p class="text-xs text-blue-400 font-semibold mb-3">(Ini Sesi Anda)</p>
+                     <div class="flex gap-2">
+                        <button class="play-btn-pc w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition btn-press flex items-center justify-center gap-2">
+                            <i data-lucide="monitor" class="w-4 h-4"></i> PC
+                        </button>
+                        <button class="play-btn-hp w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition btn-press flex items-center justify-center gap-2">
+                            <i data-lucide="smartphone" class="w-4 h-4"></i> HP
+                        </button>
+                    </div>`;
+                scheduleTimeNotification(data.endTime.toDate());
+            }
+
+            sessionElement.innerHTML = `
+                <div class="flex justify-between items-baseline">
+                    <h4 class="page-title text-xl font-bold text-white"><i data-lucide="server"></i>${slotName}</h4>
+                    <p id="countdown-${slotId}" class="text-lg font-bold text-yellow-400">Menghitung...</p>
+                </div>
+                <p class="text-gray-400 text-sm mt-1">Status: <span class="font-semibold text-red-400">Sedang Digunakan</span></p>
+                <div class="mt-4">${userSpecificElements}</div>
+                `;
+            
+            lucide.createIcons();
+
+            if (isMySession) {
+                sessionElement.querySelector('.play-btn-pc').addEventListener('click', () => window.location.href = 'parsec://');
+                sessionElement.querySelector('.play-btn-hp').addEventListener('click', () => window.location.href = 'parsec://');
+            }
+            startCountdown(slotId, data.endTime.toDate());
+        }
+
+        function startCountdown(slotId, endTime) {
+            countdownIntervals[slotId] = setInterval(() => {
+                const now = new Date();
+                const distance = endTime.getTime() - now.getTime();
+                const countdownEl = document.getElementById(`countdown-${slotId}`);
+                
+                if (distance < 0) {
+                    clearInterval(countdownIntervals[slotId]);
+                    if (countdownEl) countdownEl.textContent = "Sesi Selesai";
+                    if(document.getElementById(`session-${slotId}`).querySelector('.play-btn-pc')) {
+                       updateDoc(doc(db, "active_sessions", `pc_${slotId}`), { isActive: false, userId: null, packageName: null, startTime: null, endTime: null });
+                    }
+                    return;
+                }
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                if (countdownEl) {
+                    countdownEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // --- Logika Paket Custom ---
+        const customHoursInput = document.getElementById('custom-hours-input');
+        const customPriceDisplay = document.getElementById('custom-price');
+        const customRentalBtn = document.getElementById('custom-rental-btn');
+        const pricePerHour = 4000;
+
+        function updateCustomPrice() {
+            let hours = parseInt(customHoursInput.value);
+            if (isNaN(hours) || hours < 1) {
+                hours = 1; customHoursInput.value = 1;
+            }
+            customPriceDisplay.textContent = 'Rp ' + (hours * pricePerHour).toLocaleString('id-ID');
+            customRentalBtn.dataset.paket = `Custom`;
+            customRentalBtn.dataset.jam = hours;
+        }
+        document.getElementById('custom-hours-minus').addEventListener('click', () => {
+            if (parseInt(customHoursInput.value) > 1) {
+                customHoursInput.value--; updateCustomPrice();
+            }
+        });
+        document.getElementById('custom-hours-plus').addEventListener('click', () => {
+            customHoursInput.value++; updateCustomPrice();
+        });
+        customHoursInput.addEventListener('input', updateCustomPrice);
+
+        // --- Logika Modal Sewa PC & Waktu Tersimpan ---
+        const rentalModal = document.getElementById('rental-modal');
+        const closeRentalModalBtn = document.getElementById('close-rental-modal-btn');
+        const confirmRentalBtn = document.getElementById('confirm-rental-btn');
+        const waDigitsInput = document.getElementById('wa-digits');
+        const waError = document.getElementById('wa-error');
+        const userPhoneNumber = '6283116632566'; 
+
+        function openRentalModal(paket, jam) {
+            let finalPaket = paket;
+            if (paket === "Custom") {
+                finalPaket = `${jam} Jam`;
+            }
+            document.getElementById('rental-item-name').textContent = finalPaket;
+            confirmRentalBtn.dataset.paket = finalPaket; 
+            confirmRentalBtn.dataset.jam = jam;
+            waDigitsInput.value = ''; 
+            waError.classList.add('hidden');
+            rentalModal.classList.remove('hidden');
+            setTimeout(() => rentalModal.classList.remove('opacity-0'), 10);
+        }
+        function closeRentalModal() {
+            rentalModal.classList.add('opacity-0');
+            setTimeout(() => rentalModal.classList.add('hidden'), 300);
+        }
+        document.querySelectorAll('.rental-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.id === 'custom-rental-btn') {
+                    const currentHours = document.getElementById('custom-hours-input').value;
+                    button.dataset.jam = currentHours;
+                }
+                 openRentalModal(button.dataset.paket, button.dataset.jam);
+            });
+        });
+        closeRentalModalBtn.addEventListener('click', closeRentalModal);
+        rentalModal.addEventListener('click', (e) => e.target === rentalModal && closeRentalModal());
+
+        confirmRentalBtn.addEventListener('click', async () => {
+            let paket = confirmRentalBtn.dataset.paket;
+            const jam = parseInt(confirmRentalBtn.dataset.jam);
+            const digits = waDigitsInput.value;
+
+            if (paket === "Custom") {
+                paket = `${jam} Jam`;
+            }
+            
+            if (digits.length !== 4 || isNaN(digits)) {
+                waError.classList.remove('hidden');
+                return;
+            }
+            waError.classList.add('hidden');
+            closeRentalModal();
+            
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    userId: currentUserId, profileId: currentUserProfile?.profileId, item: paket, 
+                    billingId: digits, status: "Menunggu Konfirmasi", type: "Sewa PC", 
+                    durationHours: jam, timestamp: serverTimestamp()
+                });
+                showNotification('Permintaan sewa terkirim! Tunggu konfirmasi admin.');
+                const message = `Halo Kall, saya mau coba sewa *${paket}*. \nBilling ID: *${digits}* \nProfil ID: ${currentUserProfile?.profileId}`;
+                window.open(`https://api.whatsapp.com/send?phone=${userPhoneNumber}&text=${encodeURIComponent(message)}`, '_blank');
+            } catch (e) {
+                showNotification('Gagal mengirim permintaan sewa.', true);
+            }
+        });
+
+        useSavedTimeBtn.addEventListener('click', async () => {
+            if (!currentUserProfile || !currentUserProfile.savedTimeSeconds || currentUserProfile.savedTimeSeconds <= 0) return;
+            
+            const savedSeconds = currentUserProfile.savedTimeSeconds;
+            const savedTimeFormatted = formatSecondsToHHMMSS(savedSeconds);
+
+             const slot1Ref = doc(db, "active_sessions", "pc_slot_1");
+            const slot2Ref = doc(db, "active_sessions", "pc_slot_2");
+            const [slot1Snap, slot2Snap] = await Promise.all([getDoc(slot1Ref), getDoc(slot2Ref)]);
+            
+            let availableSlotId = null;
+            if (slot1Snap.exists() && !slot1Snap.data().isActive) availableSlotId = 'pc_slot_1';
+            else if (slot2Snap.exists() && !slot2Snap.data().isActive) availableSlotId = 'pc_slot_2';
+
+            if (!availableSlotId) {
+                showNotification('Semua slot PC penuh, tidak bisa menggunakan waktu tersimpan saat ini.', true);
+                return;
+            }
+            
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + savedSeconds * 1000);
+            const paketName = `Lanjutan (${savedTimeFormatted})`;
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const userRef = doc(db, "users", currentUserId);
+                    const slotRef = doc(db, "active_sessions", availableSlotId);
+
+                    transaction.update(slotRef, {
+                        isActive: true, userId: currentUserId, packageName: paketName, 
+                        profileId: currentUserProfile.profileId,
+                        startTime: Timestamp.fromDate(startTime), endTime: Timestamp.fromDate(endTime)
+                    });
+                     transaction.update(userRef, { savedTimeSeconds: 0 });
+                });
+                 showNotification(`Sesi lanjutan ${savedTimeFormatted} berhasil dimulai!`);
+            } catch (error) {
+                console.error("Error using saved time: ", error);
+                showNotification('Gagal menggunakan waktu tersimpan.', true);
+            }
+        });
+
+
+        // --- Logika Modal Pemesanan Akun ---
+        const orderModal = document.getElementById('order-modal');
+        const closeOrderModalBtn = document.getElementById('close-order-modal-btn');
+        const confirmOrderBtn = document.getElementById('confirm-order-btn');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        
+        function openOrderModal(type, item) {
+            document.getElementById('order-modal-title').textContent = `${type} Item`;
+            document.getElementById('order-item-name').textContent = item;
+            emailInput.value = '';
+            emailError.classList.add('hidden');
+            orderModal.classList.remove('hidden');
+            setTimeout(() => orderModal.classList.remove('opacity-0'), 10);
+        }
+        function closeOrderModal() {
+            orderModal.classList.add('opacity-0');
+            setTimeout(() => orderModal.classList.add('hidden'), 300);
+        }
+        document.querySelectorAll('.order-btn').forEach(button => {
+            button.addEventListener('click', () => openOrderModal(button.dataset.type, button.dataset.item));
+        });
+        closeOrderModalBtn.addEventListener('click', closeOrderModal);
+        orderModal.addEventListener('click', (e) => e.target === orderModal && closeOrderModal());
+
+        confirmOrderBtn.addEventListener('click', async () => {
+            const item = document.getElementById('order-item-name').textContent;
+            const email = emailInput.value;
+            
+            if (email && email.includes('@')) {
+                emailError.classList.add('hidden');
+                 try {
+                    await addDoc(collection(db, "transactions"), {
+                        userId: currentUserId, profileId: currentUserProfile?.profileId, item: item, email: email, status: "Pending", type: "Beli Akun", timestamp: serverTimestamp()
+                    });
+                    showNotification('Pesanan berhasil disimpan!');
+                    closeOrderModal();
+                } catch (e) {
+                    showNotification('Gagal menyimpan pesanan.', true);
+                }
+            } else {
+                emailError.classList.remove('hidden');
+            }
+        });
+
+        // --- Logika Notifikasi ---
+        const notification = document.getElementById('notification');
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            notification.classList.remove('hidden', 'translate-x-full');
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.classList.add('hidden'), 300);
+            }, 3000);
+        }
+        
+        function scheduleTimeNotification(endTime) {
+            if (!("Notification" in window)) return;
+
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    const timeUntilEnd = endTime.getTime() - Date.now();
+                    const notifyTime = timeUntilEnd - (5 * 60 * 1000); // 5 menit sebelum habis
+
+                    if (notifyTime > 0) {
+                        notificationTimeout = setTimeout(() => {
+                            new Notification("Waktu Sewa Segera Habis!", {
+                                body: "Sesi Anda di XyCloud akan berakhir dalam 5 menit.",
+                            });
+                        }, notifyTime);
+                    }
+                }
+            });
+        }
+        
+        
+        // --- Logika Riwayat & Antrian ---
+        const transactionList = document.getElementById('transaction-list');
+        const noTransactionMsg = document.getElementById('no-transaction-msg');
+        
+        function loadTransactions() {
+            if (!currentUserId) return;
+            const q = query(collection(db, "transactions"), where("userId", "==", currentUserId), orderBy("timestamp", "desc"));
+            
+            onSnapshot(q, (querySnapshot) => {
+                transactionList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    noTransactionMsg.classList.remove('hidden');
+                    transactionList.appendChild(noTransactionMsg);
+                } else {
+                    noTransactionMsg.classList.add('hidden');
+                    querySnapshot.forEach((doc) => {
+                        const tx = doc.data();
+                        const date = tx.timestamp ? tx.timestamp.toDate().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Baru saja';
+                        let statusColor = tx.status === "Berhasil" ? 'green' : (tx.status === "Menunggu Konfirmasi" ? 'yellow' : 'red');
+                        const txElement = document.createElement('div');
+                        txElement.className = `flex justify-between items-center bg-gray-800/50 p-3 rounded-lg`;
+                        txElement.innerHTML = `
+                            <div>
+                                <p class="font-bold text-white">${tx.item}</p>
+                                <p class="text-sm text-gray-400">${date}</p>
+                            </div>
+                            <span class="bg-${statusColor}-500/20 text-${statusColor}-400 text-xs font-bold px-3 py-1 rounded-full">${tx.status}</span>`;
+                        transactionList.appendChild(txElement);
+                    });
+                }
+            });
+        }
+        
+        const queueLoading = document.getElementById('queue-loading');
+        const queuePositionEl = document.getElementById('queue-position');
+        const notInQueueEl = document.getElementById('not-in-queue');
+        
+        function loadQueueStatus() {
+            if (!currentUserId) return;
+            const q = query(collection(db, "waiting_list"), orderBy("timestamp", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                queueLoading.classList.add('hidden');
+                const waitingUsers = snapshot.docs.map(doc => doc.data().userId);
+                const myPosition = waitingUsers.indexOf(currentUserId);
+
+                if (myPosition !== -1) {
+                    notInQueueEl.classList.add('hidden');
+                    queuePositionEl.classList.remove('hidden');
+                    queuePositionEl.querySelector('p:last-child').textContent = myPosition + 1;
+                } else {
+                    queuePositionEl.classList.add('hidden');
+                    notInQueueEl.classList.remove('hidden');
+                }
+            });
+        }
+
+        // --- Logika Chat ---
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text && currentUserProfile) {
+                try {
+                    chatInput.value = '';
+                    await addDoc(collection(db, "chat_messages"), {
+                        userId: currentUserId,
+                        profileId: currentUserProfile.profileId,
+                        name: currentUserProfile.name,
+                        text: text,
+                        timestamp: serverTimestamp()
+                    });
+                } catch (e) { console.error("Error sending message: ", e); }
+            }
+        }
+        
+        sendChatBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
+        });
+
+        function loadChatMessages() {
+            if (unsubscribeChat) unsubscribeChat(); 
+            if (!currentUserProfile || !currentUserProfile.createdAt) return;
+
+            const q = query(collection(db, "chat_messages"), where("timestamp", ">=", currentUserProfile.createdAt), orderBy("timestamp", "asc"));
+
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                chatBox.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    const isMyMessage = msg.userId === currentUserId;
+                    const time = msg.timestamp ? msg.timestamp.toDate().toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit'}) : '';
+                    const msgElement = document.createElement('div');
+                    msgElement.className = `flex gap-3 ${isMyMessage ? 'justify-end' : 'justify-start'}`;
+                    msgElement.innerHTML = `
+                         <div class="max-w-xs lg:max-w-md">
+                            <p class="text-xs mb-1 ${msg.userId === 'system-bot' ? 'text-center text-yellow-400' : (isMyMessage ? 'text-right text-blue-400' : 'text-left text-green-400')} font-bold">${isMyMessage ? 'Anda' : msg.name} <span class="text-gray-500 font-normal">${msg.userId !== 'system-bot' ? `(${msg.profileId})` : ''}</span></p>
+                            <div class="text-white p-3 rounded-lg ${msg.userId === 'system-bot' ? 'bg-gray-800' : (isMyMessage ? 'bg-blue-600' : 'bg-gray-700')}">
+                                <p class="break-words">${msg.text}</p>
+                                <p class="text-xs ${isMyMessage ? 'text-blue-200' : 'text-gray-400'} mt-2 text-right">${time}</p>
+                            </div>
+                        </div>
+                    `;
+                    chatBox.appendChild(msgElement);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+        
+        // --- Logika Accordion FAQ ---
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(i => i.classList.remove('active'));
+                if (!isActive) item.classList.add('active');
+            });
+        });
+        
+        // Helper function
+        function formatSecondsToHHMMSS(totalSeconds) {
+            if (totalSeconds < 0) totalSeconds = 0;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // --- Logika Panel Admin ---
+        const adminSessionList = document.getElementById('admin-session-list');
+        const adminQueueList = document.getElementById('admin-queue-list');
+        const adminPendingList = document.getElementById('admin-pending-list');
+
+        function loadAdminPendingTransactions(snapshot) {
+            adminPendingList.innerHTML = '';
+            if (snapshot.empty) {
+                adminPendingList.innerHTML = `<p class="text-gray-400 text-center">Tidak ada permintaan sewa.</p>`;
+                return;
+            }
+            snapshot.forEach(doc => {
+                 const tx = doc.data();
+                 const txEl = document.createElement('div');
+                 txEl.className = 'flex justify-between items-center bg-gray-800/50 p-3 rounded-lg';
+                 txEl.innerHTML = `
+                    <div>
+                         <p class="font-bold text-white">${tx.item} - ${tx.profileId}</p>
+                         <p class="text-sm text-gray-400">Billing ID: ${tx.billingId}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="admin-start-session bg-green-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-green-700 btn-press" data-txid="${doc.id}">Mulai Sesi</button>
+                    </div>
+                 `;
+                 adminPendingList.appendChild(txEl);
+            });
+            document.querySelectorAll('.admin-start-session').forEach(btn => btn.addEventListener('click', handleAdminStartSession));
+        }
+        
+        async function handleAdminStartSession(e) {
+            const txId = e.target.dataset.txid;
+            const txRef = doc(db, "transactions", txId);
+            const txSnap = await getDoc(txRef);
+            if (!txSnap.exists()) return showNotification('Transaksi tidak ditemukan!', true);
+            
+            const txData = txSnap.data();
+
+            const slot1Ref = doc(db, "active_sessions", "pc_slot_1");
+            const slot2Ref = doc(db, "active_sessions", "pc_slot_2");
+            const [slot1Snap, slot2Snap] = await Promise.all([getDoc(slot1Ref), getDoc(slot2Ref)]);
+            
+            let availableSlotId = null;
+            if (slot1Snap.exists() && !slot1Snap.data().isActive) availableSlotId = 'pc_slot_1';
+            else if (slot2Snap.exists() && !slot2Snap.data().isActive) availableSlotId = 'pc_slot_2';
+
+            if(!availableSlotId) return showNotification('Tidak ada slot kosong untuk memulai sesi ini!', true);
+            
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + txData.durationHours * 60 * 60 * 1000);
+
+            try {
+                await runTransaction(db, async(transaction) => {
+                    transaction.update(doc(db, "active_sessions", availableSlotId), {
+                         isActive: true, userId: txData.userId, profileId: txData.profileId,
+                         packageName: txData.item, 
+                         startTime: Timestamp.fromDate(startTime), endTime: Timestamp.fromDate(endTime)
+                    });
+                    transaction.update(txRef, { status: "Berhasil" });
+                });
+                showNotification(`Sesi untuk ${txData.profileId} berhasil dimulai di ${availableSlotId}.`);
+            } catch (error) {
+                 showNotification('Gagal memulai sesi.', true);
+                 console.error(error);
+            }
+        }
+        
+       function loadAdminSessionList() {
+            const q = query(collection(db, "active_sessions"));
+            onSnapshot(q, (snapshot) => {
+                adminSessionList.innerHTML = '';
+                let activeSessions = 0;
+                snapshot.forEach(doc => {
+                    const session = doc.data();
+                    const slotId = doc.id;
+                    const slotName = slotId === 'pc_slot_1' ? 'PC - 1B' : 'PC - 2A';
+                    if(session.isActive) {
+                        activeSessions++;
+                        const sessionEl = document.createElement('div');
+                        sessionEl.className = 'bg-gray-800/50 p-4 rounded-lg';
+                        sessionEl.innerHTML = `
+                            <h4 class="font-bold text-white text-lg">${slotName}</h4>
+                            <p class="text-sm text-gray-400">Digunakan oleh: <span class="font-semibold text-white">${session.profileId || session.userId.slice(0,6)}</span></p>
+                            <p class="text-sm text-gray-400">Paket: <span class="font-semibold text-white">${session.packageName}</span></p>
+                             <p class="text-sm text-gray-400">Sisa Waktu: <span id="admin-countdown-${slotId.slice(-1)}" class="font-semibold text-white">...</span></p>
+                            <div class="flex gap-2 mt-4">
+                                <button class="admin-stop-session w-full bg-red-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-red-700 btn-press" data-slotid="${slotId}">Hentikan</button>
+                                <button class="admin-add-time w-full bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-blue-700 btn-press" data-slotid="${slotId}">+1 Jam</button>
+                            </div>
+                        `;
+                        adminSessionList.appendChild(sessionEl);
+                        startCountdown(`admin-countdown-${slotId.slice(-1)}`, session.endTime.toDate());
+                    }
+                });
+                 if (activeSessions === 0) {
+                     adminSessionList.innerHTML = `<p class="text-gray-400 md:col-span-2 text-center">Tidak ada sesi yang aktif.</p>`;
+                 }
+                document.querySelectorAll('.admin-stop-session').forEach(btn => btn.addEventListener('click', handleAdminStopSession));
+                document.querySelectorAll('.admin-add-time').forEach(btn => btn.addEventListener('click', handleAdminAddTime));
+            });
+        }
+        
+        async function handleAdminStopSession(e) {
+            const slotId = e.target.dataset.slotid;
+            if (confirm(`Yakin ingin menghentikan sesi di ${slotId}?`)) {
+                await updateDoc(doc(db, "active_sessions", slotId), {
+                    isActive: false, userId: null, packageName: null, startTime: null, endTime: null
+                });
+                showNotification(`Sesi di ${slotId} dihentikan.`);
+            }
+        }
+        async function handleAdminAddTime(e) {
+            const slotId = e.target.dataset.slotid;
+            const sessionRef = doc(db, "active_sessions", slotId);
+            const sessionSnap = await getDoc(sessionRef);
+            if(sessionSnap.exists()) {
+                const currentEndTime = sessionSnap.data().endTime.toDate();
+                const newEndTime = new Date(currentEndTime.getTime() + 60 * 60 * 1000); // +1 jam
+                await updateDoc(sessionRef, { endTime: Timestamp.fromDate(newEndTime) });
+                showNotification(`Waktu di ${slotId} ditambah 1 jam.`);
+            }
+        }
+
+       function loadAdminQueueList(snapshot) {
+            adminQueueList.innerHTML = '';
+            if (snapshot.empty) {
+                adminQueueList.innerHTML = `<p class="text-gray-400 text-center">Antrian kosong.</p>`;
+                return;
+            }
+            snapshot.forEach((doc) => {
+                const waitData = doc.data();
+                const queueEl = document.createElement('div');
+                queueEl.className = 'flex justify-between items-center bg-gray-800/50 p-3 rounded-lg';
+                queueEl.innerHTML = `
+                   <div>
+                        <p class="font-bold text-white">${waitData.profileId}</p>
+                        <p class="text-sm text-gray-400">UID: ${waitData.userId.slice(0,10)}...</p>
+                   </div>
+                   <button class="admin-remove-queue bg-red-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-red-700 btn-press" data-waitid="${doc.id}">Hapus</button>
+                `;
+                adminQueueList.appendChild(queueEl);
+            });
+            document.querySelectorAll('.admin-remove-queue').forEach(btn => btn.addEventListener('click', handleAdminRemoveFromQueue));
+        }
+        
+        async function handleAdminRemoveFromQueue(e) {
+            const waitId = e.target.dataset.waitid;
+            if (confirm('Yakin ingin menghapus pengguna ini dari antrian?')) {
+                await deleteDoc(doc(db, "waiting_list", waitId));
+                showNotification('Pengguna dihapus dari antrian.');
+            }
+        }
+        
+         async function loadLeaderboardData() {
+            leaderboardLoading.classList.remove('hidden');
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, orderBy("savedTimeSeconds", "desc"), limit(10)); // Query sederhana, bisa dioptimalkan
+             try {
+                const querySnapshot = await getDocs(q);
+                const userHours = {};
+
+                // Ambil semua transaksi
+                const transactionsSnap = await getDocs(query(collection(db, "transactions"), where("type", "==", "Sewa PC")));
+                transactionsSnap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.profileId && data.durationHours) {
+                        if(userHours[data.profileId]) {
+                            userHours[data.profileId].totalHours += data.durationHours;
+                        } else {
+                            userHours[data.profileId] = { profileId: data.profileId, totalHours: data.durationHours };
+                        }
+                    }
+                });
+
+                const sortedUsers = Object.values(userHours).sort((a, b) => b.totalHours - a.totalHours);
+
+                leaderboardList.innerHTML = ''; // Clear list
+                if (sortedUsers.length === 0) {
+                     leaderboardList.innerHTML = `<p class="text-center text-gray-400">Belum ada data peringkat.</p>`;
+                } else {
+                     sortedUsers.slice(0, 10).forEach((user, index) => { // Tampilkan top 10
+                        const rankElement = document.createElement('div');
+                        rankElement.className = 'flex justify-between items-center bg-gray-800/50 p-3 rounded-lg';
+                        rankElement.innerHTML = `
+                            <div class="flex items-center gap-4">
+                                <span class="font-bold text-lg w-8 text-center ${index < 3 ? 'text-yellow-400' : 'text-gray-400'}">#${index + 1}</span>
+                                <p class="font-bold text-white">${user.profileId}</p>
+                            </div>
+                            <span class="font-semibold text-blue-400">${user.totalHours} Jam</span>
+                        `;
+                        leaderboardList.appendChild(rankElement);
+                    });
+                }
+            } catch (e) {
+                 leaderboardList.innerHTML = `<p class="text-center text-red-400">Gagal memuat data. Perlu setup Indeks di Firebase.</p>`;
+                 console.error("Leaderboard error: ", e);
+            }
+            leaderboardLoading.classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
+
