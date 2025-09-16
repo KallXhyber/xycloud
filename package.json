@@ -1,9 +1,0 @@
-{
-  "name": "xycloud-functions",
-  "version": "1.0.0",
-  "description": "Netlify functions for XyCloud",
-  "dependencies": {
-    "firebase-admin": "^11.5.0"
-  }
-}
-
