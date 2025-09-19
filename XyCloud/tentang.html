@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Kami - XyCloud Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo-container">
+                <img src="logo.png" alt="XyCloud Logo"> <span>XyCloud</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="layanan.html">Layanan</a></li>
+                <li><a href="tentang.html" class="active">Tentang</a></li>
+                <li><a href="galeri.html">Galeri</a></li>
+                <li><a href="kontak.html">Kontak</a></li>
+                <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="tentang" class="section">
+            <div class="container about-content">
+                <div class="about-text">
+                    <h2>Tentang XyCloud Game</h2>
+                    <p>XyCloud Game lahir dari semangat untuk memberikan akses teknologi komputasi dan gaming yang mudah dan terjangkau bagi semua orang. Kami percaya bahwa setiap orang berhak merasakan pengalaman gaming dengan performa maksimal tanpa harus memiliki perangkat yang mahal.</p>
+                    <br>
+                    <p>Misi kami adalah menyediakan layanan rental PC server yang stabil dan penjualan akun yang aman serta terpercaya, didukung oleh tim admin yang responsif dan siap membantu Anda.</p>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1598550476439-6847785f5533?q=80&w=1740&auto=format&fit=crop" alt="Gaming Setup">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 XyCloud Game. Semua Hak Cipta Dilindungi.</p>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript untuk menu mobile
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontak - XyCloud Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo-container">
+                <img src="logo.png" alt="XyCloud Logo"> <span>XyCloud</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="layanan.html">Layanan</a></li>
+                <li><a href="tentang.html">Tentang</a></li>
+                <li><a href="galeri.html">Galeri</a></li>
+                <li><a href="kontak.html" class="active">Kontak</a></li>
+                <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="kontak" class="section">
+            <div class="container">
+                <h2 class="section-title">Hubungi Kami</h2>
+                <p class="section-subtitle">Punya pertanyaan? Jangan ragu untuk menghubungi admin kami.</p>
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h3>Informasi Kontak Admin</h3>
+                        <p>Kami memiliki dua admin yang bertugas pada jam yang berbeda untuk memastikan Anda selalu mendapatkan layanan.</p>
+                        <p>
+                            <strong>Kall (Admin Malam)</strong><br>
+                            Jam Operasional: 18:00 - 06:00 WITA<br>
+                            WhatsApp: <a href="https://wa.me/6283116632566" target="_blank">0831-1663-2566</a>
+                        </p>
+                        <p>
+                            <strong>Dwingi (Admin Pagi)</strong><br>
+                            Jam Operasional: 06:00 - 18:00 WITA<br>
+                            WhatsApp: <a href="https://wa.me/6282256775090" target="_blank">0822-5677-5090</a>
+                        </p>
+                    </div>
+                    <div class="contact-form">
+                        <h3>Kirim Pesan</h3>
+                         <form action="#" method="POST">
+                            <input type="text" name="name" placeholder="Nama Anda" required>
+                            <input type="email" name="email" placeholder="Email Anda" required>
+                            <textarea name="message" rows="5" placeholder="Pesan Anda" required></textarea>
+                            <button type="submit" class="btn btn-primary">Kirim Pesan</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 XyCloud Game. Semua Hak Cipta Dilindungi.</p>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript untuk menu mobile
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+    </script>
+
+</body>
+</html>
