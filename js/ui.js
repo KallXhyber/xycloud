@@ -113,3 +113,63 @@ export function renderPcMonitoring(pcData, countdownIntervals) {
     }
 }
 // Tambahkan fungsi render lainnya (renderAdmins, renderTransaksi, dll) di sini jika diperlukan
+// ... (semua kode ui.js yang sudah ada sebelumnya) ...
+
+// TAMBAHKAN FUNGSI INI DI PALING BAWAH
+export function renderAdminSelection(adminsData) {
+    const adminSelectionDiv = document.getElementById('admin-selection');
+    adminSelectionDiv.innerHTML = '';
+    if (!adminsData || adminsData.length === 0) return;
+
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" }));
+    const currentHour = now.getHours();
+
+    adminsData.forEach(admin => {
+        let isOnline = admin.isOnline;
+        let scheduleText = admin.jadwal || 'Jadwal Fleksibel';
+        
+        if (admin.jamMulai && admin.jamSelesai) {
+            const jamMulai = parseInt(admin.jamMulai.split(':')[0]);
+            const jamSelesai = parseInt(admin.jamSelesai.split(':')[0]);
+            scheduleText = `${admin.jamMulai} - ${admin.jamSelesai} WITA`;
+
+            if (jamMulai > jamSelesai) { // Logika untuk jadwal yang melewati tengah malam
+                isOnline = currentHour >= jamMulai || currentHour < jamSelesai;
+            } else {
+                isOnline = currentHour >= jamMulai && currentHour < jamSelesai;
+            }
+        }
+
+        const statusClass = isOnline ? 'bg-green-500' : 'bg-red-500';
+        const statusText = isOnline ? 'Online' : 'Offline';
+
+        adminSelectionDiv.innerHTML += `
+            <div class="admin-card backdrop-blur-custom p-6 rounded-lg shadow-lg cursor-pointer hover:border-sky-500 transition-all" data-admin-id="${admin.id}">
+                <div class="flex items-center">
+                    <div class="relative">
+                        <i class="fas fa-user-circle text-4xl text-gray-400"></i>
+                        <span class="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ${statusClass} ring-2 ring-gray-800"></span>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="text-xl font-bold">${admin.name}</h4>
+                        <p class="text-sm font-semibold ${isOnline ? 'text-green-400' : 'text-red-400'}">${statusText}</p>
+                        <p class="text-xs text-gray-400 mt-1">${scheduleText}</p>
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    // Tambahkan event listener setelah semua card dibuat
+    document.querySelectorAll('.admin-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const adminId = card.dataset.adminId;
+            const selectedAdmin = adminsData.find(a => a.id === adminId);
+            // Logika untuk menampilkan harga berdasarkan admin yang dipilih perlu ditambahkan di sini
+            console.log("Admin dipilih:", selectedAdmin); 
+            document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-gray-700/50'));
+            card.classList.add('border-sky-500', 'bg-gray-700/50');
+        });
+    });
+}
+
+
