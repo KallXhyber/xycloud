@@ -1,5 +1,5 @@
 // File: js/firestore.js
-// Berisi semua fungsi yang berinteraksi dengan Firestore (database).
+// Versi ini sudah dihubungkan dengan fungsi render di ui.js
 
 import { 
     collection, 
@@ -10,14 +10,13 @@ import {
     where
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { db } from './firebase-init.js';
-import { renderPcMonitoring } from './ui.js';
+import { renderPcMonitoring, renderAdminSelection } from './ui.js';
 
 let countdownIntervals = {};
 
-// Fungsi untuk mendengarkan perubahan pada koleksi 'pcs'
 export function listenToPcs() {
     const pcsCollection = collection(db, 'pcs');
-    const q = query(pcsCollection, orderBy('name')); // Mengurutkan berdasarkan nama
+    const q = query(pcsCollection, orderBy('name'));
     
     onSnapshot(q, (snapshot) => {
         const pcData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -25,14 +24,14 @@ export function listenToPcs() {
     });
 }
 
-// Fungsi untuk mendengarkan perubahan pada koleksi 'admins'
 export function listenToAdmins() {
     const adminsCollection = collection(db, 'admins');
-    onSnapshot(adminsCollection, (snapshot) => {
+    const q = query(adminsCollection, orderBy('name'));
+
+    onSnapshot(q, (snapshot) => {
         const adminsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Panggil fungsi render untuk admin di sini
-        // renderAdminSelection(adminsData);
+        // PANGGIL FUNGSI RENDER DI SINI
+        renderAdminSelection(adminsData);
     });
 }
 
-// Tambahkan fungsi listener lainnya untuk transaksi, dll.
