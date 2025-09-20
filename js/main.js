@@ -1,15 +1,15 @@
 // File: js/main.js
-// VERSI FINAL: Mengembalikan semua logika interaktif website.
+// VERSI BARU: Sekarang mengimpor playlist dari file terpisah.
 
 import { initializeFirebase, db } from './firebase-init.js';
 import { showPage, updateUIForAuthState, showToast, renderHargaList } from './ui.js';
 import { monitorAuthState, setupAuthEventListeners } from './auth.js';
 import { listenToPcs, listenToAdmins, listenToAdminData, handleAdminActions, handleUserActions } from './firestore.js';
+import { playlist } from './playlist.js'; // <-- IMPORT PLAYLIST DARI FILE BARU
 
 let selectedSewaData = {};
 
 function setupBaseEventListeners() {
-    // ... (kode ini sudah benar)
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -21,13 +21,12 @@ function setupBaseEventListeners() {
     });
     document.getElementById('admin-panel-btn').addEventListener('click', () => {
         showPage('admin-panel');
-        listenToAdminData(); // Mulai listen data admin panel saat dibuka
+        listenToAdminData();
     });
 }
 
 function setupMusicPlayer() {
-    // ... (kode ini sudah benar)
-    const playlist = [ { title: "Lost in Space", artist: "MILL WEST", src: "https://f.top4top.io/m_3549csq8c0.mp3" }, { title: "Ambient Background", artist: "SoundHelix", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }];
+    // const playlist = [ ... ]; <-- BARIS INI DIHAPUS, KARENA SUDAH DIIMPOR DI ATAS
     let currentTrackIndex = 0;
     const mainAudioPlayer = document.getElementById('main-audio-player');
     const playPauseBtn = document.getElementById('play-pause-btn'), nextBtn = document.getElementById('next-track-btn'), prevBtn = document.getElementById('prev-track-btn');
@@ -48,7 +47,6 @@ function setupMusicPlayer() {
 }
 
 function renderTutorials() {
-    // ... (kode ini sudah benar)
     const tutorialVideosData = [ { title: 'TUTORIAL MAIN FIVEM', link: 'coming soon' }, { title: 'TUTORIAL BUAT AKUN DISCORD', link: 'https://youtu.be/KAuhg-6kXhY?si=8PiS7mxwtSY4QmxP' }, { title: 'TUTORIAL BUAT AKUN STEAM', link: 'https://youtu.be/4kPkifr2ZUI?si=jbhoi6RHUxpORSoa' }, { title: 'TUTORIAL BUAT AKUN CFX.RE', link: 'coming soon' }, { title: 'TUTORIAL ON MIC DI PC DEEPLINK', link: 'https://youtu.be/0PY7c_1FaoM?si=uyZvwTUMjZiU9BaE' }, { title: 'ON MIC ANDROID', link: 'coming soon' } ];
     const videoContainer = document.getElementById('tutorial-videos');
     videoContainer.innerHTML = '';
@@ -59,7 +57,6 @@ function renderTutorials() {
     });
 }
 
-// MENGEMBALIKAN SEMUA EVENT LISTENER INTERAKTIF
 function setupGlobalEventListeners() {
     document.body.addEventListener('input', (e) => {
         if (e.target.classList.contains('kustom-jam-input')) {
@@ -75,9 +72,8 @@ function setupGlobalEventListeners() {
 
     document.body.addEventListener('click', async (e) => {
         const target = e.target;
-        const currentUser = window.currentUser; // Mengambil user dari global scope
+        const currentUser = window.currentUser;
 
-        // Aksi Beli Akun
         if (target.closest('#beli-akun-btn')) {
             if (!currentUser || currentUser.isAnonymous) { document.getElementById('login-modal').classList.remove('hidden'); return; }
             document.getElementById('qris-title').textContent = "Beli Akun Rockstar";
@@ -88,14 +84,11 @@ function setupGlobalEventListeners() {
             document.getElementById('qris-modal').classList.remove('hidden');
         }
 
-        // Aksi Memilih Paket Sewa
         if (target.closest('.sewa-paket-btn') || target.closest('.sewa-kustom-btn')) {
             if (!currentUser || currentUser.isAnonymous) { document.getElementById('login-modal').classList.remove('hidden'); return; }
-            
             const isKustom = target.closest('.sewa-kustom-btn');
             const btn = isKustom || target.closest('.sewa-paket-btn');
             let paketData;
-
             if (isKustom) {
                 const container = btn.closest('.backdrop-blur-custom');
                 const inputJam = container.querySelector('.kustom-jam-input');
@@ -107,26 +100,20 @@ function setupGlobalEventListeners() {
             }
             const adminData = { id: btn.dataset.adminId, name: btn.dataset.adminName, whatsapp: btn.dataset.adminWhatsapp };
             selectedSewaData = { paket: paketData, admin: adminData };
-            
             document.getElementById('whatsapp-input').value = '';
             document.getElementById('sewa-form-modal').classList.remove('hidden');
         }
-
-        // Aksi di dalam Admin Panel
         handleUserActions(e, currentUser, selectedSewaData);
     });
 
-    // Event listener untuk form dan modal
     document.getElementById('cancel-sewa-form').addEventListener('click', () => document.getElementById('sewa-form-modal').classList.add('hidden'));
     document.getElementById('close-qris-modal').addEventListener('click', () => document.getElementById('qris-modal').classList.add('hidden'));
     document.getElementById('submit-sewa-form').addEventListener('click', async () => {
         const waInput = document.getElementById('whatsapp-input').value;
         if (waInput.length !== 4 || !/^\d+$/.test(waInput)) return showToast('Mohon masukkan 4 digit angka yang valid.', 'error');
-        
         const currentUser = window.currentUser;
         const billingId = `${waInput}-${Date.now().toString().slice(-6)}`;
         const transactionData = { ...selectedSewaData, billingId, status: 'Menunggu Pembayaran', userId: currentUser.uid, userDisplayName: currentUser.displayName, timestamp: serverTimestamp() };
-        
         try {
             await addDoc(collection(db, 'transactions'), transactionData);
             document.getElementById('sewa-form-modal').classList.add('hidden');
@@ -141,31 +128,24 @@ function setupGlobalEventListeners() {
             showToast('Gagal membuat transaksi.', 'error');
         }
     });
-
     document.body.addEventListener('change', (e) => handleAdminActions(e));
 }
 
 async function startApp() {
     try {
         await initializeFirebase();
-        
-        // Simpan currentUser di window agar bisa diakses global oleh event listener
         window.currentUser = null;
         monitorAuthState((user, isAdmin, displayName) => {
             window.currentUser = user;
             updateUIForAuthState(user, isAdmin, displayName);
         });
-
         setupBaseEventListeners();
         setupAuthEventListeners();
-        setupGlobalEventListeners(); // <- PANGGIL EVENT LISTENER UTAMA
-        
+        setupGlobalEventListeners();
         listenToPcs();
         listenToAdmins();
-        
         setupMusicPlayer();
         renderTutorials();
-
         showPage('home');
         console.log("Aplikasi XyCloud berhasil dimuat dan semua fungsi aktif.");
     } catch (error) {
