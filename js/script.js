@@ -1,12 +1,11 @@
 // File: js/script.js
 // SEMUA LOGIKA WEBSITE ADA DI SINI DALAM SATU FILE UNTUK MEMASTIKAN FUNGSI 100%
+// VERSI 2: Memperbaiki fungsionalitas halaman Profil dan kalkulasi pendapatan.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInAnonymously, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, updateDoc, query, orderBy, limit, serverTimestamp, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// PENTING: Konfigurasi Firebase diletakkan kembali di sini untuk sementara demi kestabilan.
-// Pastikan Environment Variables di Vercel Anda sudah benar.
 const firebaseConfig = { 
     apiKey: "AIzaSyCXUy_NPBoC4scskd6tRJNoJtR0NRAfTJ8", 
     authDomain: "xycloud-531d2.firebaseapp.com", 
@@ -58,6 +57,17 @@ function showPage(pageId) {
     if (newPage) newPage.classList.add('active'); 
     window.scrollTo(0, 0); 
     mobileMenu.classList.add('hidden'); 
+}
+
+// --- Logika Panel Admin & Pendapatan ---
+function calculateAndDisplayIncome(adminName) { 
+    const incomeDisplay = document.getElementById('total-pendapatan'); 
+    const q = query(collection(db, 'usageLogs'), where('adminName', '==', adminName)); 
+    onSnapshot(q, (snapshot) => { 
+        let totalPendapatan = 0; 
+        snapshot.forEach(doc => { totalPendapatan += doc.data().keuntungan || 0; }); 
+        incomeDisplay.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPendapatan); 
+    }); 
 }
 
 // --- SCRIPT UTAMA DIMULAI SETELAH HALAMAN SIAP ---
@@ -142,17 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         hargaContainer.classList.remove('hidden'); 
     }
     
-    // --- Logika Panel Admin ---
-    function calculateAndDisplayIncome(adminName) { 
-        const incomeDisplay = document.getElementById('total-pendapatan'); 
-        const q = query(collection(db, 'usageLogs'), where('adminName', '==', adminName)); 
-        onSnapshot(q, (snapshot) => { 
-            let totalPendapatan = 0; 
-            snapshot.forEach(doc => { totalPendapatan += doc.data().keuntungan || 0; }); 
-            incomeDisplay.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPendapatan); 
-        }); 
-    }
-    
     function renderAdminView() {
         const adminPcControls = document.getElementById('admin-pc-controls');
         onSnapshot(collection(db, 'pcs'), (snapshot) => { 
@@ -188,28 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- Event Listeners Global (untuk semua aksi) ---
     document.body.addEventListener('change', async (e) => {
-        if (e.target.classList.contains('pc-status-select')) { 
-            const pcId = e.target.dataset.id; 
-            const newStatus = e.target.value; 
-            try { await updateDoc(doc(db, 'pcs', pcId), { status: newStatus, endTime: null }); showToast(`Status PC berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status PC.', 'error'); } 
-        }
-        if (e.target.classList.contains('trx-status-select')) { 
-            const trxId = e.target.dataset.id; 
-            const newStatus = e.target.value; 
-            try { 
-                const trxData = JSON.parse(e.target.dataset.trx); 
-                await updateDoc(doc(db, 'transactions', trxId), { status: newStatus }); 
-                if (newStatus === 'Selesai' && trxData.admin.role === 'reseller') { 
-                    await addDoc(collection(db, 'usageLogs'), { adminName: trxData.admin.name, keuntungan: trxData.keuntungan, paketNama: trxData.paket.nama, userDisplayName: trxData.userDisplayName, timestamp: serverTimestamp() }); 
-                } 
-                showToast(`Status transaksi berhasil diubah`, 'success'); 
-            } catch (err) { showToast('Gagal mengubah status.', 'error'); } 
-        }
-        if (e.target.classList.contains('admin-online-toggle')) { 
-            const adminId = e.target.dataset.id; 
-            const isOnline = e.target.checked; 
-            try { await updateDoc(doc(db, 'admins', adminId), { isOnline: isOnline }); showToast(`Status admin berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status admin.', 'error'); } 
-        }
+        if (e.target.classList.contains('pc-status-select')) { const pcId = e.target.dataset.id; const newStatus = e.target.value; try { await updateDoc(doc(db, 'pcs', pcId), { status: newStatus, endTime: null }); showToast(`Status PC berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status PC.', 'error'); } }
+        if (e.target.classList.contains('trx-status-select')) { const trxId = e.target.dataset.id; const newStatus = e.target.value; try { const trxData = JSON.parse(e.target.dataset.trx); await updateDoc(doc(db, 'transactions', trxId), { status: newStatus }); if (newStatus === 'Selesai' && trxData.admin.role === 'reseller') { await addDoc(collection(db, 'usageLogs'), { adminName: trxData.admin.name, keuntungan: trxData.keuntungan, paketNama: trxData.paket.nama, userDisplayName: trxData.userDisplayName, timestamp: serverTimestamp() }); } showToast(`Status transaksi berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status.', 'error'); } }
+        if (e.target.classList.contains('admin-online-toggle')) { const adminId = e.target.dataset.id; const isOnline = e.target.checked; try { await updateDoc(doc(db, 'admins', adminId), { isOnline: isOnline }); showToast(`Status admin berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status admin.', 'error'); } }
     });
 
     document.body.addEventListener('input', (e) => { 
@@ -284,16 +264,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { showToast(error.code === 'auth/email-already-in-use' ? 'Email ini sudah terdaftar.' : 'Pendaftaran gagal.', 'error'); } 
     });
     
+    // INI BAGIAN YANG DIPERBAIKI
     document.getElementById('profile-link').addEventListener('click', (e) => { 
         e.preventDefault(); 
         if (!currentUser || currentUser.isAnonymous || !currentUserData) return; 
+        
         document.getElementById('profile-email').value = currentUser.email || 'Tidak ada email'; 
         document.getElementById('profile-displayname').value = currentUser.displayName || ''; 
         document.getElementById('profile-new-password').value = ''; 
+        
         const pendapatanContainer = document.getElementById('pendapatan-container'); 
         if (currentUserData.isAdmin && currentUserData.role === 'reseller') { 
             pendapatanContainer.classList.remove('hidden'); 
-            calculateAndDisplayIncome(currentUserData.name); 
+            calculateAndDisplayIncome(currentUserData.name); // Memanggil fungsi kalkulasi pendapatan
         } else { 
             pendapatanContainer.classList.add('hidden'); 
         } 
@@ -443,3 +426,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tampilkan halaman home sebagai default
     showPage('home');
 });
+
