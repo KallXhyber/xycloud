@@ -1,4 +1,7 @@
 // File: api/firebase-config.js
+// Tugas file ini adalah mengambil kunci rahasia Firebase dari Vercel
+// dan mengirimkannya ke browser dengan aman.
+
 export default function handler(request, response) {
   const config = {
     apiKey: process.env.VITE_PUBLIC_API_KEY,
