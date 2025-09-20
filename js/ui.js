@@ -1,6 +1,5 @@
 // File: js/ui.js
-// Berisi semua fungsi yang berhubungan dengan manipulasi tampilan (DOM),
-// seperti menampilkan halaman, notifikasi, dan merender data ke HTML.
+// VERSI FINAL: Berisi semua fungsi untuk merender (menampilkan) elemen ke layar.
 
 // --- Variabel & Elemen UI ---
 const pages = document.querySelectorAll('.page');
@@ -35,8 +34,9 @@ export function showToast(message, type = 'success') {
     }, 4000);
 }
 
-// --- Fungsi Update Tampilan Berdasarkan Data ---
+// --- Fungsi Update Tampilan ---
 export function updateUIForAuthState(user, isAdmin, displayName) {
+    // ... (Fungsi ini sudah benar, tidak perlu diubah)
     const loginContainer = document.getElementById('login-container');
     const userInfo = document.getElementById('user-info');
     const userName = document.getElementById('user-name');
@@ -57,14 +57,89 @@ export function updateUIForAuthState(user, isAdmin, displayName) {
     }
 }
 
+// FUNGSI BARU UNTUK MERENDER LIST HARGA
+export function renderHargaList(admin) {
+    const hargaContainer = document.getElementById('harga-list-container');
+    const hargaListDiv = document.getElementById('harga-list');
+    const selectedAdminName = document.getElementById('selected-admin-name');
+
+    selectedAdminName.textContent = `(${admin.name})`;
+    hargaListDiv.innerHTML = ''; // Kosongkan list harga sebelumnya
+    
+    const prices = admin.prices || {};
+    const allPrices = [...(prices.perJam || []), ...(prices.paketSiangMalam || []), ...(prices.paketSimpanWaktu || [])];
+    
+    allPrices.forEach(paket => {
+        const formatHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(paket.harga);
+
+        if (paket.bisaKustom) {
+            hargaListDiv.innerHTML += `
+            <div class="backdrop-blur-custom p-6 rounded-lg shadow-lg flex flex-col col-span-1 md:col-span-2">
+                <h4 class="text-xl font-bold text-sky-400">${paket.nama}</h4>
+                <p class="text-lg font-medium my-2 text-white">${formatHarga} / jam</p>
+                <div class="flex items-center gap-4 mt-4">
+                    <input type="number" min="1" value="1" class="kustom-jam-input w-20 bg-gray-700 text-center font-bold text-white rounded-md p-2" data-harga-per-jam="${paket.harga}">
+                    <span>Jam</span>
+                    <span class="total-harga-display text-2xl font-bold text-white flex-grow text-right">${formatHarga}</span>
+                </div>
+                <button class="mt-4 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 sewa-kustom-btn" data-paket-nama="${paket.nama}" data-harga-per-jam="${paket.harga}" data-admin-id="${admin.id}" data-admin-name="${admin.name}" data-admin-whatsapp="${admin.whatsapp}">Sewa Kustom</button>
+            </div>`;
+        } else {
+            hargaListDiv.innerHTML += `
+            <div class="backdrop-blur-custom p-6 rounded-lg shadow-lg flex flex-col">
+                <h4 class="text-xl font-bold text-sky-400">${paket.nama}</h4>
+                <p class="text-3xl font-bold my-4 text-white">${formatHarga}</p>
+                <button class="mt-auto w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 sewa-paket-btn" data-paket-nama="${paket.nama}" data-paket-harga="${paket.harga}" data-paket-durasi="${paket.durasi}" data-admin-id="${admin.id}" data-admin-name="${admin.name}" data-admin-whatsapp="${admin.whatsapp}">Pilih Paket</button>
+            </div>`;
+        }
+    });
+    hargaContainer.classList.remove('hidden'); // Tampilkan kontainer list harga
+}
+
+
+export function renderAdminSelection(adminsData, onAdminSelectCallback) {
+    const adminSelectionDiv = document.getElementById('admin-selection');
+    adminSelectionDiv.innerHTML = '';
+    if (!adminsData || adminsData.length === 0) return;
+
+    // ... (Logika status online admin tetap sama)
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" }));
+    const currentHour = now.getHours();
+
+    adminsData.forEach(admin => {
+        let isOnline = admin.isOnline;
+        let scheduleText = admin.jadwal || 'Jwal Fleksibel';
+        if (admin.jamMulai && admin.jamSelesai) {
+            const jamMulai = parseInt(admin.jamMulai.split(':')[0]);
+            const jamSelesai = parseInt(admin.jamSelesai.split(':')[0]);
+            scheduleText = `${admin.jamMulai} - ${admin.jamSelesai} WITA`;
+            if (jamMulai > jamSelesai) { isOnline = currentHour >= jamMulai || currentHour < jamSelesai; } else { isOnline = currentHour >= jamMulai && currentHour < jamSelesai; }
+        }
+        const statusClass = isOnline ? 'bg-green-500' : 'bg-red-500';
+        const statusText = isOnline ? 'Online' : 'Offline';
+
+        adminSelectionDiv.innerHTML += `<div class="admin-card backdrop-blur-custom p-6 rounded-lg shadow-lg cursor-pointer hover:border-sky-500 transition-all" data-admin-id="${admin.id}"><div class="flex items-center"><div class="relative"><i class="fas fa-user-circle text-4xl text-gray-400"></i><span class="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ${statusClass} ring-2 ring-gray-800"></span></div><div class="ml-4"><h4 class="text-xl font-bold">${admin.name}</h4><p class="text-sm font-semibold ${isOnline ? 'text-green-400' : 'text-red-400'}">${statusText}</p><p class="text-xs text-gray-400 mt-1">${scheduleText}</p></div></div></div>`;
+    });
+
+    document.querySelectorAll('.admin-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const adminId = card.dataset.adminId;
+            const selectedAdmin = adminsData.find(a => a.id === adminId);
+            document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-gray-700/50'));
+            card.classList.add('border-sky-500', 'bg-gray-700/50');
+            // PANGGIL FUNGSI RENDER HARGA DI SINI!
+            onAdminSelectCallback(selectedAdmin);
+        });
+    });
+}
+
 export function renderPcMonitoring(pcData, countdownIntervals) {
+    // ... (Fungsi ini sudah benar, tidak perlu diubah)
     const pcMonitoringDiv = document.getElementById('pc-monitoring');
     const homeSewaButtonContainer = document.getElementById('home-sewa-button-container');
     pcMonitoringDiv.innerHTML = '';
     homeSewaButtonContainer.innerHTML = '';
     let isReadyPC = false;
-    
-    // Hapus interval lama sebelum membuat yang baru
     Object.values(countdownIntervals).forEach(clearInterval);
 
     if (!pcData || pcData.length === 0) {
@@ -100,6 +175,18 @@ export function renderPcMonitoring(pcData, countdownIntervals) {
                 }
             }, 1000);
         }
+
+        pcMonitoringDiv.innerHTML += `<div class="backdrop-blur-custom rounded-lg shadow-lg flex flex-col"><div class="monitor-icon p-4"><div class="status-dot ${statusClass}"></div><div class="text-center"><i class="fas fa-desktop text-5xl text-gray-500"></i><p class="mt-2 text-base font-bold">${pc.name}</p></div></div><div class="p-2 text-center -mt-2">${timerHTML}</div><div class="mt-auto"><div class="monitor-stand"></div><div class="monitor-base"></div></div></div>`;
+        if (pc.status === 'READY') isReadyPC = true;
+    });
+
+    if (isReadyPC) {
+        homeSewaButtonContainer.innerHTML = `<button id="sewa-sekarang-btn" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-sky-600 transform hover:scale-105 transition-transform duration-300 shadow-lg">Sewa Sekarang <i class="fas fa-arrow-right ml-2"></i></button>`;
+        document.getElementById('sewa-sekarang-btn').addEventListener('click', () => showPage('sewa'));
+    } else {
+        homeSewaButtonContainer.innerHTML = `<button class="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg text-lg cursor-not-allowed" disabled>Semua PC Penuh</button>`;
+    }
+}
 
         pcMonitoringDiv.innerHTML += `<div class="backdrop-blur-custom rounded-lg shadow-lg flex flex-col"><div class="monitor-icon p-4"><div class="status-dot ${statusClass}"></div><div class="text-center"><i class="fas fa-desktop text-5xl text-gray-500"></i><p class="mt-2 text-base font-bold">${pc.name}</p></div></div><div class="p-2 text-center -mt-2">${timerHTML}</div><div class="mt-auto"><div class="monitor-stand"></div><div class="monitor-base"></div></div></div>`;
         if (pc.status === 'READY') isReadyPC = true;
