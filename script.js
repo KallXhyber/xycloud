@@ -158,9 +158,39 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderAdminView() {
         const adminPcControls = document.getElementById('admin-pc-controls');
         onSnapshot(collection(db, 'pcs'), (snapshot) => { adminPcControls.innerHTML = ''; const pcs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(pc => pc.name).sort((a,b) => a.name.localeCompare(b.name)); pcs.forEach(pc => { let timerControlHTML = ''; if (pc.status === 'DIGUNAKAN') { timerControlHTML = `<div class="flex items-center gap-2 mt-2"><input type="number" placeholder="Menit" class="w-20 bg-white/10 text-white rounded p-1 text-center pc-timer-input"><button class="bg-blue-600 text-white px-2 py-1 rounded text-sm set-waktu-btn" data-id="${pc.id}">Set Waktu</button></div>`; } adminPcControls.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><div class="flex items-center justify-between"><span class="font-bold text-white">${pc.name}</span><select class="pc-status-select bg-black/30 text-white rounded p-1" data-id="${pc.id}"><option value="READY" ${pc.status === 'READY' ? 'selected' : ''}>Ready</option><option value="DIGUNAKAN" ${pc.status === 'DIGUNAKAN' ? 'selected' : ''}>Digunakan</option><option value="OFFLINE" ${pc.status === 'OFFLINE' ? 'selected' : ''}>Offline</option></select></div>${timerControlHTML}</div>`; }); });
-        const adminTransaksiList = document.getElementById('admin-transaksi-list');
-        const transQuery = query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(20));
-        onSnapshot(transQuery, (snapshot) => { adminTransaksiList.innerHTML = ''; if (snapshot.empty) { adminTransaksiList.innerHTML = '<p class="text-center text-gray-300">Belum ada transaksi.</p>'; return; } snapshot.forEach(doc => { const trx = { id: doc.id, ...doc.data() }; adminTransaksiList.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p><p class="text-white"><strong>Item:</strong> ${trx.paket?.nama || 'N/A'}</p><select class="trx-status-select bg-black/30 text-white rounded p-1 mt-2 w-full" data-id="${trx.id}" data-trx='${JSON.stringify(trx)}'><option value="Menunggu Pembayaran" ${trx.status === 'Menunggu Pembayaran' ? 'selected' : ''}>Menunggu</option><option value="Selesai" ${trx.status === 'Selesai' ? 'selected' : ''}>Selesai</option></select></div>`; }); });
+const adminTransaksiList = document.getElementById('admin-transaksi-list');
+
+// Pastikan currentUserData sudah ada sebelum membuat query
+if (currentUserData && currentUserData.name) {
+    // QUERY BARU: Hanya ambil transaksi yang perlu dikonfirmasi oleh admin ini
+    const transQuery = query(
+        collection(db, 'transactions'),
+        where("adminName", "==", currentUserData.name),
+        where("status", "==", "Menunggu Konfirmasi"),
+        orderBy("timestamp", "desc")
+    );
+
+    onSnapshot(transQuery, (snapshot) => {
+        adminTransaksiList.innerHTML = '';
+        if (snapshot.empty) {
+            adminTransaksiList.innerHTML = '<p class="text-center text-gray-300">Tidak ada transaksi yang perlu dikonfirmasi.</p>';
+            return;
+        }
+        snapshot.forEach(doc => {
+            const trx = { id: doc.id, ...doc.data() };
+            // TAMPILAN BARU: Ganti dropdown dengan tombol konfirmasi
+            adminTransaksiList.innerHTML += `
+                <div class="backdrop-blur-custom p-3 rounded-md">
+                    <p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p>
+                    <p class="text-white"><strong>Paket:</strong> ${trx.paket?.nama || 'N/A'}</p>
+                    <button class="konfirmasi-transaksi-btn mt-2 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700" data-id="${trx.id}">
+                        <i class="fas fa-check-circle mr-2"></i>Konfirmasi Pesanan
+                    </button>
+                </div>
+            `;
+        });
+    });
+}
         const adminStatusControls = document.getElementById('admin-status-controls');
         onSnapshot(collection(db, 'admins'), (snapshot) => { adminStatusControls.innerHTML = ''; const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(admin => admin.name).sort((a,b) => a.name.localeCompare(b.name)); admins.forEach(admin => { adminStatusControls.innerHTML += `<div class="flex items-center space-x-2"><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" value="" class="sr-only peer admin-online-toggle" data-id="${admin.id}" ${admin.isOnline ? 'checked' : ''}><div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div></label><span class="font-bold text-white">${admin.name}</span></div>`; }); });
     }
@@ -188,6 +218,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = e.target.closest('button, a');
         if(!target) return;
 
+        if (target.classList.contains('konfirmasi-transaksi-btn')) {
+    const trxId = target.dataset.id;
+    if (!trxId) return;
+
+    // Ubah status menjadi "Menunggu Pembayaran"
+    try {
+        const trxDocRef = doc(db, 'transactions', trxId);
+        await updateDoc(trxDocRef, {
+            status: "Menunggu Pembayaran"
+        });
+        showToast("Transaksi berhasil dikonfirmasi!", "success");
+    } catch (error) {
+        console.error("Gagal konfirmasi transaksi: ", error);
+        showToast("Gagal mengonfirmasi.", "error");
+    }
+}
         if (target.id === 'beli-akun-btn') { 
             const user = auth.currentUser;
             if (!user || user.isAnonymous) { document.getElementById('login-modal').classList.remove('hidden'); return; } 
@@ -425,5 +471,6 @@ document.getElementById('submit-sewa-form').addEventListener('click', async () =
     showPage('home');
 
 });
+
 
 
