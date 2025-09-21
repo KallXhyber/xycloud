@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XyCloud - Rental PC Online</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="antiasa">
+    <audio id="main-audio-player"></audio>
+    <audio id="success-sound" src="https://g.top4top.io/m_3550wc2zd0.mp3"></audio>
+    <audio id="error-sound" src="https://i.top4top.io/m_3549ihw3n0.mp3"></audio>
+    <audio id="info-sound" src="https://g.top4top.io/m_3550wc2zd0.mp3"></audio>
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2 w-full max-w-xs"></div>
+    
+    <div id="music-player" class="fixed bottom-4 left-4 z-50 backdrop-blur-custom rounded-lg shadow-lg w-56">
+        <div id="minimized-icon" class="w-full h-full items-center justify-center text-white cursor-pointer"><i class="fas fa-music"></i></div>
+        <div id="music-player-content" class="p-2.5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p id="track-title" class="text-white text-sm font-bold truncate">Memuat...</p>
+                    <p id="track-artist" class="text-gray-200 text-xs">...</p>
+                </div>
+                <button id="minimize-player-btn" class="text-gray-200 hover:text-white flex-shrink-0 ml-2"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div class="flex items-center justify-around mt-2">
+                <button id="prev-track-btn" class="text-gray-200 hover:text-white text-base"><i class="fas fa-backward-step"></i></button>
+                <button id="play-pause-btn" class="bg-sky-500 text-white w-9 h-9 rounded-full flex items-center justify-center text-base shadow-lg"><i class="fas fa-play"></i></button>
+                <button id="next-track-btn" class="text-gray-200 hover:text-white text-base"><i class="fas fa-forward-step"></i></button>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+                <i class="fas fa-volume-down text-gray-300 text-xs"></i>
+                <input type="range" id="volume-slider" class="volume-slider w-full" min="0" max="100" value="30">
+                <i class="fas fa-volume-up text-gray-300 text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <header class="backdrop-blur-custom sticky top-0 z-40 shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0"><h1 class="text-2xl font-extrabold text-white cursor-pointer animated-logo"><i class="fas fa-cloud-bolt mr-2 text-sky-400"></i>Xy<span class="text-sky-400">Cloud</span></h1></div>
+                <nav class="hidden md:flex items-baseline space-x-4">
+                    <a href="#" class="nav-link text-gray-200 hover:text-sky-400 px-3 py-2 rounded-md text-sm font-medium" data-page="home">Home</a>
+                    <a href="#" class="nav-link text-gray-200 hover:text-sky-400 px-3 py-2 rounded-md text-sm font-medium" data-page="akun">Jual Akun</a>
+                    <a href="#" class="nav-link text-gray-200 hover:text-sky-400 px-3 py-2 rounded-md text-sm font-medium" data-page="spesifikasi">Spesifikasi</a>
+                    <a href="#" class="nav-link text-gray-200 hover:text-sky-400 px-3 py-2 rounded-md text-sm font-medium" data-page="tutorial">Tutorial</a>
+                    <a href="#" class="nav-link text-gray-200 hover:text-sky-400 px-3 py-2 rounded-md text-sm font-medium" data-page="transaksi">Transaksi</a>
+                </nav>
+                <div class="flex items-center">
+                    <div id="user-info" class="hidden items-center">
+                        <span id="user-name" class="text-white text-sm font-medium"></span>
+                        <a href="#" id="profile-link" class="ml-4 text-gray-200 hover:text-sky-400 text-sm"><i class="fas fa-user-circle"></i> Profil</a>
+                        <button id="logout-btn" class="ml-4 bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700">Logout</button>
+                    </div>
+                    <div id="login-container">
+                         <button id="login-btn-main" class="bg-sky-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-sky-600">Login</button>
+                    </div>
+                     <button id="admin-panel-btn" class="hidden ml-4 bg-yellow-500 text-gray-900 px-3 py-1 rounded-md text-sm hover:bg-yellow-600"><i class="fas fa-user-shield"></i></button>
+                    <button id="mobile-menu-button" type="button" class="md:hidden ml-4 backdrop-blur-custom inline-flex items-center justify-center p-2 rounded-md text-gray-200 hover:text-white"><i class="fas fa-bars"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden hidden backdrop-blur-custom" id="mobile-menu"><nav class="px-2 pt-2 pb-3 space-y-1 sm:px-3"><a href="#" class="nav-link text-gray-200 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium" data-page="home">Home</a><a href="#" class="nav-link text-gray-200 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium" data-page="akun">Jual Akun</a><a href="#" class="nav-link text-gray-200 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium" data-page="spesifikasi">Spesifikasi</a><a href="#" class="nav-link text-gray-200 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium" data-page="tutorial">Tutorial</a><a href="#" class="nav-link text-gray-200 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium" data-page="transaksi">Transaksi</a></nav></div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+        <div id="home" class="page"><section class="text-center p-8 md:p-12 rounded-lg backdrop-blur-custom" style="animation: fadeIn 1s ease-out;"><img src="https://share.creavite.co/68cdd4d198ccaa297de6afdb.gif" alt="PC Gaming Banner" class="w-full max-w-md mx-auto mb-6 rounded-lg shadow-lg"><h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4">Rental PC Spek Dewa</h2><p class="text-lg text-gray-200 max-w-3xl mx-auto mb-8">Mainkan game favoritmu tanpa lag, kerjakan tugas berat, atau live streaming dengan lancar menggunakan PC remote kami.</p><div id="home-sewa-button-container"></div></section><section class="mt-12"><h3 class="text-3xl font-bold mb-6 text-white text-center">Monitoring PC</h3><div id="pc-monitoring" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div></section></div>
+        <div id="akun" class="page"><div class="backdrop-blur-custom p-8 rounded-lg shadow-lg max-w-4xl mx-auto"><div class="grid md:grid-cols-2 gap-8 items-center"><div><img src="https://placehold.co/600x400/0f172a/7dd3fc?text=Akun+FiveM" alt="Akun FiveM" class="rounded-lg shadow-lg w-full"></div><div><h2 class="text-3xl font-bold text-sky-400"><i class="fab fa-rocketchat mr-3"></i>Akun Rockstar FiveM</h2><p class="my-4 text-gray-200">Dapatkan akun Rockstar Games dengan lisensi GTA V original, khusus untuk bermain FiveM. Akun ini bersifat private, aman, dan siap pakai.</p><p class="text-sm text-yellow-400 mb-4"><i class="fas fa-exclamation-triangle mr-2"></i>Akun ini tidak bisa digunakan untuk mode Story/Offline GTA V.</p><div class="my-6"><span class="text-4xl font-bold text-white">Rp 25.000</span><span class="text-gray-300">/ permanen</span></div><button id="beli-akun-btn" class="w-full bg-sky-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-600 transition duration-300"><i class="fas fa-shopping-cart mr-2"></i> Beli Sekarang</button></div></div></div></div>
+        <div id="spesifikasi" class="page"><h2 class="text-3xl font-bold mb-8 text-white text-center">Spesifikasi & Kegunaan PC</h2><div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-start"><div class="backdrop-blur-custom p-8 rounded-lg"><h3 class="text-2xl font-bold mb-6 text-white"><i class="fas fa-cogs mr-3 text-sky-400"></i>Spesifikasi PC</h3><ul class="space-y-4 text-gray-200"><li class="flex items-center text-lg"><i class="fas fa-microchip fa-fw mr-4 text-xl text-sky-400"></i>12 Core CPU</li><li class="flex items-center text-lg"><i class="fas fa-memory fa-fw mr-4 text-xl text-sky-400"></i>20 GB RAM</li><li class="flex items-center text-lg"><i class="fas fa-gamepad fa-fw mr-4 text-xl text-sky-400"></i>NVIDIA RTX 3060 Ti</li></ul></div><div class="backdrop-blur-custom p-8 rounded-lg"><h3 class="text-2xl font-bold mb-6 text-white"><i class="fas fa-check-circle mr-3 text-green-400"></i>Cocok Untuk</h3><ul class="space-y-4 text-gray-200"><li class="flex items-center text-lg"><i class="fas fa-video fa-fw mr-4 text-xl text-green-400"></i>Editing & Rendering</li><li class="flex items-center text-lg"><i class="fas fa-code fa-fw mr-4 text-xl text-green-400"></i>Coding & Development</li><li class="flex items-center text-lg"><i class="fas fa-broadcast-tower fa-fw mr-4 text-xl text-green-400"></i>Live Streaming</li><li class="flex items-center text-lg"><i class="fas fa-vr-cardboard fa-fw mr-4 text-xl text-green-400"></i>Gaming Berat</li></ul></div></div></div>
+        <div id="tutorial" class="page"><h2 class="text-3xl font-bold mb-8 text-white text-center">Galeri Tutorial Video</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="tutorial-videos"></div></div>
+        <div id="transaksi" class="page"><h2 class="text-3xl font-bold mb-6 text-white">Riwayat Transaksi Terkini</h2><div class="backdrop-blur-custom rounded-lg shadow-lg overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-200"><thead class="text-xs text-gray-100 uppercase bg-white/10"><tr><th scope="col" class="px-6 py-3">Billing ID</th><th scope="col" class="px-6 py-3">Paket</th><th scope="col" class="px-6 py-3">Admin</th><th scope="col" class="px-6 py-3">Status</th></tr></thead><tbody id="transaksi-list"></tbody></table></div></div></div>
+        <div id="sewa" class="page"><h2 class="text-3xl font-bold mb-2 text-white">Pilih Admin & Paket Sewa</h2><p class="text-gray-300 mb-6">Status online admin ditentukan otomatis berdasarkan jadwal.</p><div id="admin-selection" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div><div id="harga-list-container" class="hidden"><h3 class="text-2xl font-bold mb-4 text-white">List Harga <span id="selected-admin-name"></span></h3><div id="harga-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div></div></div>
+        
+        <div id="admin-panel" class="page">
+            <h2 class="text-3xl font-bold mb-6 text-white">Admin Panel</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-3 backdrop-blur-custom p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Buat Transaksi Manual</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="manual-billing-id" placeholder="Billing ID (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                        <input type="text" id="manual-user-name" placeholder="Nama User (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                        <input type="text" id="manual-paket-name" placeholder="Nama Paket (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                    </div>
+                    <button id="submit-manual-transaction" class="mt-4 w-full md:w-auto bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus-circle mr-2"></i>Buat & Simpan Transaksi
+                    </button>
+                </div>
+                <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Kontrol Status PC</h3>
+                    <div id="admin-pc-controls" class="space-y-4"></div>
+                </div>
+                <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Manajemen Transaksi</h3>
+                    <div id="admin-transaksi-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                </div>
+                <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Kontrol Status Admin</h3>
+                    <div id="admin-status-controls" class="flex flex-wrap gap-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile" class="page"><h2 class="text-3xl font-bold mb-6 text-white text-center">Profil Pengguna</h2><div class="max-w-2xl mx-auto backdrop-blur-custom p-8 rounded-lg shadow-lg"><div id="pendapatan-container" class="hidden mb-6"><h3 class="text-lg font-medium text-white">Total Pendapatan (Reseller)</h3><p id="total-pendapatan" class="text-3xl font-bold text-green-400">Rp 0</p></div><div class="space-y-6"><div><label for="profile-email" class="block text-sm font-medium text-gray-200">Email</label><input type="email" id="profile-email" class="mt-1 block w-full bg-black/20 border-white/20 rounded-md shadow-sm py-2 px-3 text-gray-400 cursor-not-allowed" readonly></div><div><label for="profile-displayname" class="block text-sm font-medium text-gray-200">Nama Tampilan</label><input type="text" id="profile-displayname" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500"></div><hr class="border-white/20"><div><h3 class="text-lg font-medium text-white">Ubah Password</h3><p class="text-sm text-gray-300 mb-4">Kosongkan jika tidak ingin mengubah password.</p><label for="profile-new-password" class="block text-sm font-medium text-gray-200">Password Baru</label><input type="password" id="profile-new-password" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500"></div><div class="flex justify-end pt-4"><button id="save-profile-btn" class="bg-sky-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-sky-600"><i class="fas fa-save mr-2"></i> Simpan Perubahan</button></div></div></div></div>
+    </main>
+    
+    <footer class="mt-16 backdrop-blur-custom"><div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-200"><h3 class="text-lg font-semibold text-white mb-4">Terhubung Dengan Kami</h3><div class="flex justify-center items-center space-x-6 mb-6"><a href="https://wa.me/6283116632566" target="_blank" class="hover:text-sky-400 transition-colors" title="Customer Service"><i class="fas fa-headset text-2xl"></i></a><a href="https://chat.whatsapp.com/CJ0s93ohwgR7UuI2BMdp0x?mode=ems_copy_t" target="_blank" class="text-green-500 hover:text-green-400 transition-colors" title="Grup WhatsApp"><i class="fab fa-whatsapp-square text-3xl"></i></a><a href="#" class="hover:text-sky-400 nav-link transition-colors" data-page="tutorial" title="FAQ"><i class="fas fa-question-circle text-2xl"></i></a></div><p class="text-xs">&copy; 2025 XyCloud. All rights reserved.</p><p class="text-xs mt-2">Backsound by: Tenxi & Lina lady geboy</p></div></footer>
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="backdrop-blur-custom p-8 rounded-lg shadow-xl w-full max-w-sm text-left"><h2 class="text-2xl font-bold mb-6 text-white text-center">Login atau Daftar</h2><div class="space-y-4"><div><label for="email-input" class="block text-sm font-medium text-gray-200">Email</label><input type="email" id="email-input" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="nama@email.com"></div><div><label for="password-input" class="block text-sm font-medium text-gray-200">Password</label><input type="password" id="password-input" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="••••••••"></div></div><div class="mt-6 flex flex-col sm:flex-row gap-3"><button id="login-email-btn" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg flex-1">Login</button><button id="register-email-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1">Daftar</button></div><div class="my-6 flex items-center text-center"><hr class="flex-grow border-white/20"><span class="mx-4 text-gray-300 text-sm">ATAU</span><hr class="flex-grow border-white/20"></div><div class="space-y-3"><button id="google-login-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center"><i class="fab fa-google mr-3"></i> Lanjutkan dengan Google</button><button id="anonymous-login-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center"><i class="fas fa-user-secret mr-3"></i> Lanjutkan sebagai Tamu</button></div><button id="close-login-modal" class="mt-6 text-gray-300 hover:text-white w-full text-center">Tutup</button></div></div>
+    <div id="sewa-form-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="backdrop-blur-custom p-8 rounded-lg shadow-xl w-full max-w-md"><h2 class="text-2xl font-bold mb-4 text-white">Formulir Penyewaan</h2><p class="text-gray-300 mb-6">Lengkapi data berikut untuk membuat billing ID.</p><div><label for="whatsapp-input" class="block text-sm font-medium text-gray-200">4 Digit Terakhir No. WhatsApp</label><input type="tel" id="whatsapp-input" maxlength="4" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="Contoh: 2566"></div><div class="mt-6 flex justify-end space-x-4"><button id="cancel-sewa-form" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Batal</button><button id="submit-sewa-form" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg">Lanjut ke WhatsApp</button></div></div></div>
+    <div id="qris-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="backdrop-blur-custom p-8 rounded-lg shadow-xl w-full max-w-sm text-center"><h2 id="qris-title" class="text-2xl font-bold mb-4 text-white">Konfirmasi via WhatsApp</h2><div class="w-full h-64 flex items-center justify-center"><i class="fab fa-whatsapp text-9xl text-green-400"></i></div><p id="qris-instruction" class="text-gray-200 mt-2">Silahkan kirim pesan yang sudah disiapkan untuk melanjutkan transaksi.</p><a id="whatsapp-link-qris" href="#" target="_blank" class="mt-6 inline-block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg"><i class="fab fa-whatsapp mr-2"></i> Kirim Pesan ke Admin</a><button id="close-qris-modal" class="mt-4 text-gray-300 hover:text-white">Tutup</button></div></div>
+    
+    <script type="module" src="script.js"></script>
+</body>
+</html>
