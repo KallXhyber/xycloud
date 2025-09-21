@@ -36,9 +36,9 @@
                 <button id="next-track-btn" class="text-gray-200 hover:text-white text-base"><i class="fas fa-forward-step"></i></button>
             </div>
             <div class="flex items-center gap-2 mt-2">
-                <i class="fas fa-volume-down text-gray-300 text-xs"></i>
+                <i class="fas fa-volume-down" class="text-gray-300 text-xs"></i>
                 <input type="range" id="volume-slider" class="volume-slider w-full" min="0" max="100" value="30">
-                <i class="fas fa-volume-up text-gray-300 text-xs"></i>
+                <i class="fas fa-volume-up" class="text-gray-300 text-xs"></i>
             </div>
         </div>
     </div>
@@ -93,10 +93,6 @@
                 <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-4">Kontrol Status Admin</h3>
                     <div id="admin-status-controls" class="flex flex-wrap gap-4"></div>
-                    <hr class="border-white/20 my-4">
-                    <button id="enable-notifications-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700">
-                        <i class="fas fa-bell mr-2"></i>Aktifkan Notifikasi di HP Ini
-                    </button>
                 </div>
             </div>
         </div>
@@ -115,15 +111,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/auth-compat.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
-    <script>
-        try {
-            const messaging = firebase.messaging();
-        } catch (e) {
-            console.error("Firebase Messaging tidak didukung di browser ini.", e);
-        }
-    </script>
 
     <script type="module" src="script.js"></script>
 </body>
