@@ -280,29 +280,59 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('admin-panel-btn').addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
     document.getElementById('cancel-sewa-form').addEventListener('click', () => document.getElementById('sewa-form-modal').classList.add('hidden'));
     
-    document.getElementById('submit-sewa-form').addEventListener('click', () => {
-        const waInput = document.getElementById('whatsapp-input').value;
-        if (waInput.length !== 4 || !/^\d+$/.test(waInput)) { showToast('Mohon masukkan 4 digit angka yang valid.', 'error'); return; }
-        const user = auth.currentUser;
-        if (!user) { showToast('Gagal: Sesi pengguna tidak ditemukan. Silakan login ulang.', 'error'); return; }
-        
-        const billingId = waInput; 
-        const paketInfo = selectedSewaData.paket.nama;
-        const adminInfo = selectedSewaData.admin.name;
-        
-        let adminWhatsapp = selectedSewaData.admin.whatsapp.replace(/\D/g, ''); 
+    // GANTI DENGAN KODE BARU INI
+document.getElementById('submit-sewa-form').addEventListener('click', async () => { // Tambahkan 'async'
+    const waInput = document.getElementById('whatsapp-input').value;
+    if (waInput.length !== 4 || !/^\d+$/.test(waInput)) {
+        showToast('Mohon masukkan 4 digit angka yang valid.', 'error');
+        return;
+    }
+    const user = auth.currentUser;
+    if (!user || !selectedSewaData.paket) {
+        showToast('Sesi tidak valid. Silakan coba lagi.', 'error');
+        return;
+    }
+
+    const billingId = waInput;
+    const adminInfo = selectedSewaData.admin;
+    const paketInfo = selectedSewaData.paket;
+
+    // 1. Siapkan data transaksi untuk disimpan
+    const transactionData = {
+        userId: user.uid,
+        userDisplayName: user.displayName,
+        billingId: billingId,
+        adminName: adminInfo.name,
+        adminId: adminInfo.id,
+        paket: paketInfo,
+        status: "Menunggu Konfirmasi", // <-- STATUS BARU
+        timestamp: serverTimestamp()
+    };
+
+    try {
+        // 2. Simpan transaksi ke Firestore
+        const docRef = await addDoc(collection(db, "transactions"), transactionData);
+        console.log("Transaksi tertunda berhasil dibuat dengan ID: ", docRef.id);
+
+        // 3. Siapkan pesan dan link WhatsApp (seperti sebelumnya)
+        let adminWhatsapp = adminInfo.whatsapp.replace(/\D/g, '');
         if (adminWhatsapp.startsWith('0')) {
             adminWhatsapp = '62' + adminWhatsapp.substring(1);
         }
-
-        const message = encodeURIComponent(`Halo Admin ${adminInfo},\n\nSaya ingin sewa PC:\n- Pengguna: ${user.displayName}\n- Paket: ${paketInfo}\n- Billing ID: ${billingId}\n\nMohon konfirmasinya.`);
-
+        const message = encodeURIComponent(`Halo Admin ${adminInfo.name},\n\nSaya sudah membuat permintaan sewa:\n- Pengguna: ${user.displayName}\n- Paket: ${paketInfo.nama}\n- Billing ID: ${billingId}\n\nMohon untuk dikonfirmasi.`);
+        
+        // 4. Tampilkan modal seperti biasa
         document.getElementById('sewa-form-modal').classList.add('hidden');
-        document.getElementById('qris-instruction').innerHTML = `Billing ID Anda <strong class="text-white">${billingId}</strong>. Kirim pesan ke admin <strong class="text-white">${adminInfo}</strong> untuk melanjutkan.`;
+        document.getElementById('qris-instruction').innerHTML = `Permintaan sewa dengan ID <strong class="text-white">${billingId}</strong> sedang menunggu konfirmasi dari <strong class="text-white">${adminInfo.name}</strong>.`;
         document.getElementById('whatsapp-link-qris').href = `https://wa.me/${adminWhatsapp}?text=${message}`;
         document.getElementById('qris-modal').classList.remove('hidden');
-        showToast('Silahkan kirim pesan konfirmasi!', 'info');
-    });
+        showToast('Permintaan sewa terkirim, tunggu konfirmasi admin.', 'info');
+
+    } catch (error) {
+        console.error("Gagal membuat transaksi: ", error);
+        showToast("Gagal membuat permintaan sewa.", "error");
+    }
+});
 
     document.getElementById('submit-manual-transaction').addEventListener('click', async () => {
         const billingId = document.getElementById('manual-billing-id').value;
@@ -395,4 +425,5 @@ document.addEventListener('DOMContentLoaded', () => {
     showPage('home');
 
 });
+
 
