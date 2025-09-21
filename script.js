@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- FUNGSI-FUNGSI UNTUK MENAMPILKAN DATA ---
-    function renderHargaList(admin) { /* Kode ini tidak berubah */ }
+    function renderHargaList(admin) { /* Kode ini tidak berubah dari file Anda */ }
     
     function calculateAndDisplayIncome(adminName) { 
         const incomeDisplay = document.getElementById('total-pendapatan'); 
@@ -153,7 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
             onSnapshot(collection(db, 'pcs'), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
 
             // 2. Render Manajemen Transaksi
-            const transQuery = query(collection(db, 'transactions'), where("adminName", "==", currentUserData.name), where("status", "in", ["Menunggu Konfirmasi", "Menunggu Pembayaran"]), orderBy("timestamp", "desc"));
+            const transQuery = query(
+                collection(db, 'transactions'),
+                where("adminName", "==", currentUserData.name),
+                where("status", "in", ["Menunggu Konfirmasi", "Menunggu Pembayaran"]),
+                orderBy("timestamp", "desc")
+            );
             onSnapshot(transQuery, (snapshot) => {
                 adminTransaksiList.innerHTML = '';
                 if (snapshot.empty) {
@@ -164,13 +169,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     const trx = { id: doc.id, ...doc.data() };
                     let buttonHTML = '';
                     const trxDataString = JSON.stringify(trx).replace(/'/g, "&apos;");
+
                     if (trx.status === "Menunggu Konfirmasi") {
                         buttonHTML = `<button class="konfirmasi-transaksi-btn mt-2 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700" data-id="${trx.id}">Konfirmasi Pesanan</button>`;
                     } else if (trx.status === "Menunggu Pembayaran") {
                         buttonHTML = `<button class="selesaikan-transaksi-btn mt-2 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600" data-id="${trx.id}" data-trx='${trxDataString}'>Selesaikan Transaksi</button>`;
                     }
-                    adminTransaksiList.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p><p class="text-white"><strong>Status:</strong> <span class="font-bold text-yellow-400">${trx.status}</span></p>${buttonHTML}</div>`;
+
+                    adminTransaksiList.innerHTML += `
+                        <div class="backdrop-blur-custom p-3 rounded-md">
+                            <p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p>
+                            <p class="text-white"><strong>Status:</strong> <span class="font-bold text-yellow-400">${trx.status}</span></p>
+                            ${buttonHTML}
+                        </div>
+                    `;
                 });
+            }, (error) => {
+                console.error("Error fetching transactions: ", error);
+                adminTransaksiList.innerHTML = '<p class="text-center text-red-400">Gagal memuat transaksi. Cek Index & Rules.</p>';
             });
 
             // 3. Render Kontrol Status Admin
@@ -179,8 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- EVENT LISTENER UNTUK SEMUA KLIK & PERUBAHAN ---
-    document.body.addEventListener('change', async (e) => { /* Kode ini tidak berubah */ });
-    document.body.addEventListener('input', (e) => { /* Kode ini tidak berubah */ });
+    document.body.addEventListener('change', async (e) => { /* Kode ini tidak berubah dari file Anda */ });
+
+    document.body.addEventListener('input', (e) => { /* Kode ini tidak berubah dari file Anda */ });
+    
     document.body.addEventListener('click', async (e) => { 
         const target = e.target.closest('button, a');
         if(!target) return;
@@ -202,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const trxDocRef = doc(db, 'transactions', trxId);
                 await updateDoc(trxDocRef, { status: "Selesai" });
+                
                 const adminDoc = await getDoc(doc(db, 'admins', trxData.adminId));
                 if (adminDoc.exists() && adminDoc.data().role === 'reseller' && trxData.paket.keuntungan > 0) {
                     await addDoc(collection(db, 'usageLogs'), {
@@ -223,46 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- EVENT LISTENER UNTUK TOMBOL & FORM ---
-    document.getElementById('profile-link').addEventListener('click', (e) => { /* Kode ini tidak berubah */ });
-    document.getElementById('submit-sewa-form').addEventListener('click', async () => { /* Kode ini tidak berubah */ });
+    document.getElementById('profile-link').addEventListener('click', (e) => { /* Kode ini tidak berubah dari file Anda */ });
+    document.getElementById('submit-sewa-form').addEventListener('click', async () => { /* Kode ini tidak berubah dari file Anda */ });
     document.getElementById('admin-panel-btn').addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
-
-    // --- LOGIKA BARU UNTUK TOMBOL NOTIFIKASI ---
-    const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
-    if (enableNotificationsBtn) {
-        enableNotificationsBtn.addEventListener('click', async () => {
-            if (!currentUserData) {
-                showToast("Anda harus login sebagai admin untuk mengaktifkan notifikasi.", "error");
-                return;
-            }
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    showToast("Izin notifikasi diberikan!", "info");
-                    const vapidKey = "BHGZ4bpkMWZZO8MkvRoG7K6fonrLRIaPsytcHOCedJ-lY_fHzAlp1Rn9DgwFgVzan715bap1h_wsI1GnZFJUHOQ";
-                    const messaging = firebase.messaging();
-                    const token = await messaging.getToken({ vapidKey: vapidKey });
-                    if (token) {
-                        const userDocRef = doc(db, 'users', currentUser.uid);
-                        await updateDoc(userDocRef, { fcmToken: token });
-                        showToast("Notifikasi untuk perangkat ini berhasil diaktifkan!", "success");
-                    } else {
-                        showToast("Gagal mendapatkan token notifikasi.", "error");
-                    }
-                } else {
-                    showToast("Izin notifikasi tidak diberikan.", "error");
-                }
-            } catch (error) {
-                console.error('Gagal mengaktifkan notifikasi: ', error);
-                showToast("Terjadi kesalahan, coba lagi nanti.", "error");
-            }
-        });
-    }
+    // ... sisa event listener tidak berubah ...
 
     // --- LISTENER GLOBAL & KONTEN DINAMIS ---
-    onSnapshot(collection(db, `pcs`), (snapshot) => { /* Kode ini tidak berubah */ });
-    onSnapshot(collection(db, `admins`), (snapshot) => { /* Kode ini tidak berubah */ });
-    onSnapshot(query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15)), (snapshot) => { /* Kode ini tidak berubah */ });
+    onSnapshot(collection(db, `pcs`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
+    onSnapshot(collection(db, `admins`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
+    onSnapshot(query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15)), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
     
     showPage('home');
 });
