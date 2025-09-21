@@ -237,7 +237,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('register-email-btn').addEventListener('click', async () => { const email = document.getElementById('email-input').value; const password = document.getElementById('password-input').value; const displayName = prompt("Masukkan nama tampilan Anda (misal: Budi):"); if (!email || password.length < 6 || !displayName) { showToast('Email, password (min. 6 karakter), dan nama tampilan harus diisi.', 'error'); return; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); const user = userCredential.user; await updateProfile(user, { displayName: displayName }); const userDocRef = doc(db, `users/${user.uid}`); await setDoc(userDocRef, { displayName: displayName, email: user.email, isAdmin: false, createdAt: serverTimestamp() }); document.getElementById('login-modal').classList.add('hidden'); showToast('Pendaftaran berhasil! Anda sudah login.', 'success'); } catch (error) { showToast(error.code === 'auth/email-already-in-use' ? 'Email ini sudah terdaftar.' : 'Pendaftaran gagal.', 'error'); } });
-    document.getElementById('profile-link').addEventListener('click', (e) => { e.preventDefault(); if (!currentUser || currentUser.isAnonymous || !currentUserData) return; document.getElementById('profile-email').value = currentUser.email || 'Tidak ada email'; document.getElementById('profile-displayname').value = currentUser.displayName || ''; document.getElementById('profile-new-password').value = ''; const pendapatanContainer = document.getElementById('pendapatan-container'); if (currentUserData.isAdmin && currentUserData.role === 'reseller') { pendapatanContainer.classList.remove('hidden'); calculateAndDisplayIncome(currentUserData.name); } else { pendapatanContainer.classList.add('hidden'); } showPage('profile'); });
+    document.getElementById('profile-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!currentUser || currentUser.isAnonymous || !currentUserData) return;
+
+    // Mengisi data profil (kode ini tetap sama)
+    document.getElementById('profile-email').value = currentUser.email || 'Tidak ada email';
+    document.getElementById('profile-displayname').value = currentUser.displayName || '';
+    document.getElementById('profile-new-password').value = '';
+
+    // Mengambil elemen-elemen dari HTML
+    const pendapatanContainer = document.getElementById('pendapatan-container');
+    const sisaWaktuContainer = document.getElementById('sisa-waktu-container');
+    const sisaWaktuDisplay = document.getElementById('sisa-waktu-display');
+
+    // LOGIKA BARU: Menampilkan sisa waktu
+    if (currentUserData.sisaWaktuDetik && currentUserData.sisaWaktuDetik > 0) {
+        // Panggil fungsi format waktu yang tadi kita buat
+        sisaWaktuDisplay.textContent = formatDetikKeWaktu(currentUserData.sisaWaktuDetik);
+        sisaWaktuContainer.classList.remove('hidden'); // Tampilkan wadah sisa waktu
+    } else {
+        sisaWaktuContainer.classList.add('hidden'); // Sembunyikan jika tidak ada sisa waktu
+    }
+    
+    // Logika untuk pendapatan reseller (kode ini tetap sama)
+    if (currentUserData.isAdmin && currentUserData.role === 'reseller') {
+        pendapatanContainer.classList.remove('hidden');
+        calculateAndDisplayIncome(currentUserData.name);
+    } else {
+        pendapatanContainer.classList.add('hidden');
+    }
+    
+    showPage('profile');
+});
     document.getElementById('save-profile-btn').addEventListener('click', async () => { if (!currentUser) return; const newDisplayName = document.getElementById('profile-displayname').value; const newPassword = document.getElementById('profile-new-password').value; let changesMade = false; try { if (newDisplayName && newDisplayName !== currentUser.displayName) { await updateProfile(currentUser, { displayName: newDisplayName }); const userDocRef = doc(db, `users/${currentUser.uid}`); await updateDoc(userDocRef, { displayName: newDisplayName }); changesMade = true; } if (newPassword) { if (newPassword.length >= 6) { await updatePassword(currentUser, newPassword); changesMade = true; } else { throw new Error('Password baru harus minimal 6 karakter.'); } } showToast(changesMade ? 'Profil berhasil diperbarui!' : 'Tidak ada perubahan.', changesMade ? 'success' : 'info'); showPage('home'); } catch (error) { showToast(error.message, 'error'); } });
     document.getElementById('login-btn-main').addEventListener('click', () => document.getElementById('login-modal').classList.remove('hidden'));
     document.getElementById('close-login-modal').addEventListener('click', () => document.getElementById('login-modal').classList.add('hidden'));
@@ -363,3 +395,4 @@ document.addEventListener('DOMContentLoaded', () => {
     showPage('home');
 
 });
+
