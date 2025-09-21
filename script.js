@@ -24,7 +24,9 @@ let currentUser = null, currentUserData = null, selectedSewaData = {}, countdown
 
 const playlist = [ 
     { title: "Garam & Madu", artist: "Tenxi", src: "https://g.top4top.io/m_3550tbjv31.mp3" }, 
-    { title: "Jarang pulang", artist: "Lina lady geboy", src: "https://j.top4top.io/m_3550yryj20.mp3" }
+    { title: "Jarang pulang", artist: "Lina lady geboy", src: "https://j.top4top.io/m_3550yryj20.mp3" },
+    { title: "Untungnya", artist: "Bernadya", src: "https://j.top4top.io/m_35517qyii1.mp3" },
+    { title: "Tia monika", artist: "Alo x Tia monika", src: "https://c.top4top.io/m_35511aw9r1.mp3" }
 ];
 
 // FUNGSI TOAST NOTIFICATION
@@ -283,4 +285,5 @@ onAuthStateChanged(auth, async (user) => {
     
     showPage('home');
 });
+
 
