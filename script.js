@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInAnonymously, updatePassword, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, updateDoc, query, orderBy, limit, serverTimestamp, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInAnonymously, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, updateDoc, query, orderBy, limit, serverTimestamp, where, addDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // FUNGSI HELPER
 function formatDetikKeWaktu(totalDetik) {
@@ -119,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const userDoc = await getDoc(userDocRef); 
             if (userDoc.exists()) {
                 currentUserData = { id: user.uid, ...userDoc.data() };
+            } else {
+                currentUserData = null; // Pastikan null jika tidak ada dokumen
             }
             updateUIForAuthState(user, currentUserData?.isAdmin || false, user.displayName || 'Tamu'); 
         } else { 
@@ -158,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- FUNGSI RENDER ADMIN PANEL (SUDAH DIPERBAIKI) ---
     function renderAdminView() {
-        // Pastikan currentUserData sudah terisi sebelum menjalankan query
         if (currentUserData && currentUserData.isAdmin) {
             const adminPcControls = document.getElementById('admin-pc-controls');
             const adminTransaksiList = document.getElementById('admin-transaksi-list');
@@ -202,6 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                 });
+            }, (error) => { // Menambahkan error handling
+                console.error("Error fetching transactions: ", error);
+                adminTransaksiList.innerHTML = '<p class="text-center text-red-400">Gagal memuat transaksi. Cek Index & Rules.</p>';
             });
 
             // 3. Render Kontrol Status Admin
@@ -219,8 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- EVENT LISTENER UNTUK SEMUA KLIK & PERUBAHAN ---
     document.body.addEventListener('change', async (e) => {
+        // ... kode change listener (PC status, admin status) tetap sama ...
         if (e.target.classList.contains('pc-status-select')) { const pcId = e.target.dataset.id; const newStatus = e.target.value; try { await updateDoc(doc(db, 'pcs', pcId), { status: newStatus, endTime: null }); showToast(`Status PC berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status PC.', 'error'); } }
-        if (e.target.classList.contains('trx-status-select')) { const trxId = e.target.dataset.id; const newStatus = e.target.value; try { const trxData = JSON.parse(e.target.dataset.trx); await updateDoc(doc(db, 'transactions', trxId), { status: newStatus }); if (newStatus === 'Selesai' && trxData.admin?.role === 'reseller') { await addDoc(collection(db, 'usageLogs'), { adminName: trxData.admin.name, keuntungan: trxData.keuntungan, paketNama: trxData.paket.nama, userDisplayName: trxData.userDisplayName, timestamp: serverTimestamp() }); } showToast(`Status transaksi berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status.', 'error'); } }
         if (e.target.classList.contains('admin-online-toggle')) { const adminId = e.target.dataset.id; const isOnline = e.target.checked; try { await updateDoc(doc(db, 'admins', adminId), { isOnline: isOnline }); showToast(`Status admin berhasil diubah`, 'success'); } catch (err) { showToast('Gagal mengubah status admin.', 'error'); } }
     });
 
@@ -253,13 +257,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("Gagal mengonfirmasi.", "error");
             }
         }
-        if (target.id === 'beli-akun-btn') { /* ... kode beli akun ... */ } 
-        if (target.classList.contains('sewa-paket-btn') || target.classList.contains('sewa-kustom-btn')) { /* ... kode sewa ... */ } 
-        if (target.classList.contains('set-waktu-btn')) { /* ... kode set waktu ... */ } 
+        
+        if (target.classList.contains('set-waktu-btn')) {
+             const pcId = target.dataset.id; 
+            const container = target.closest('.backdrop-blur-custom'); 
+            const input = container.querySelector('.pc-timer-input'); 
+            const minutes = parseInt(input.value); 
+            if (!minutes || minutes <= 0) { showToast('Masukkan jumlah menit yang valid.', 'error'); return; } 
+            const endTime = new Date(Date.now() + minutes * 60 * 1000); 
+            try { 
+                await updateDoc(doc(db, 'pcs', pcId), { endTime: endTime }); 
+                showToast(`Timer untuk ${minutes} menit berhasil diatur!`, 'success'); 
+                input.value = ''; 
+            } catch (err) { 
+                showToast('Gagal mengatur timer.', 'error'); 
+            } 
+        }
+
+        // ... event listener lain (sewa, beli akun, etc.) ...
     });
 
     // --- EVENT LISTENER UNTUK TOMBOL & FORM ---
-    document.getElementById('register-email-btn').addEventListener('click', async () => { /* ... kode registrasi ... */ });
+    document.getElementById('register-email-btn').addEventListener('click', async () => { const email = document.getElementById('email-input').value; const password = document.getElementById('password-input').value; const displayName = prompt("Masukkan nama tampilan Anda (misal: Budi):"); if (!email || password.length < 6 || !displayName) { showToast('Email, password (min. 6 karakter), dan nama tampilan harus diisi.', 'error'); return; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); const user = userCredential.user; await updateProfile(user, { displayName: displayName }); const userDocRef = doc(db, `users/${user.uid}`); await setDoc(userDocRef, { displayName: displayName, email: user.email, isAdmin: false, createdAt: serverTimestamp() }); document.getElementById('login-modal').classList.add('hidden'); showToast('Pendaftaran berhasil! Anda sudah login.', 'success'); } catch (error) { showToast(error.code === 'auth/email-already-in-use' ? 'Email ini sudah terdaftar.' : 'Pendaftaran gagal.', 'error'); } });
     document.getElementById('profile-link').addEventListener('click', (e) => {
         e.preventDefault();
         if (!currentUser || currentUser.isAnonymous || !currentUserData) return;
@@ -270,7 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const sisaWaktuContainer = document.getElementById('sisa-waktu-container');
         const sisaWaktuDisplay = document.getElementById('sisa-waktu-display');
         if (currentUserData.sisaWaktuDetik && currentUserData.sisaWaktuDetik > 0) {
-            sisaWaktuDisplay.textContent = formatDetikKeWaktu(currentUserData.sisaWituDetik);
+            // FIX TYPO DI SINI
+            sisaWaktuDisplay.textContent = formatDetikKeWaktu(currentUserData.sisaWaktuDetik);
             sisaWaktuContainer.classList.remove('hidden');
         } else {
             sisaWaktuContainer.classList.add('hidden');
@@ -283,26 +303,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showPage('profile');
     });
-    document.getElementById('save-profile-btn').addEventListener('click', async () => { /* ... kode simpan profil ... */ });
+    document.getElementById('save-profile-btn').addEventListener('click', async () => { if (!currentUser) return; const newDisplayName = document.getElementById('profile-displayname').value; const newPassword = document.getElementById('profile-new-password').value; let changesMade = false; try { if (newDisplayName && newDisplayName !== currentUser.displayName) { await updateProfile(currentUser, { displayName: newDisplayName }); const userDocRef = doc(db, `users/${currentUser.uid}`); await updateDoc(userDocRef, { displayName: newDisplayName }); changesMade = true; } if (newPassword) { if (newPassword.length >= 6) { await updatePassword(currentUser, newPassword); changesMade = true; } else { throw new Error('Password baru harus minimal 6 karakter.'); } } showToast(changesMade ? 'Profil berhasil diperbarui!' : 'Tidak ada perubahan.', changesMade ? 'success' : 'info'); showPage('home'); } catch (error) { showToast(error.message, 'error'); } });
     document.getElementById('login-btn-main').addEventListener('click', () => document.getElementById('login-modal').classList.remove('hidden'));
     document.getElementById('close-login-modal').addEventListener('click', () => document.getElementById('login-modal').classList.add('hidden'));
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => showToast('Logout berhasil.')));
-    document.getElementById('google-login-btn').addEventListener('click', () => { /* ... kode login google ... */ });
-    document.getElementById('login-email-btn').addEventListener('click', () => { /* ... kode login email ... */ });
-    document.getElementById('anonymous-login-btn').addEventListener('click', () => { /* ... kode login tamu ... */ });
+    document.getElementById('google-login-btn').addEventListener('click', () => { signInWithPopup(auth, new GoogleAuthProvider()).then(async (result) => { const user = result.user; const userDocRef = doc(db, `users/${user.uid}`); const userDoc = await getDoc(userDocRef); if (!userDoc.exists()) { await setDoc(userDocRef, { displayName: user.displayName, email: user.email, isAdmin: false, createdAt: serverTimestamp() }); } document.getElementById('login-modal').classList.add('hidden'); showToast('Login berhasil!'); }).catch(() => showToast('Login Google gagal.', 'error')); });
+    document.getElementById('login-email-btn').addEventListener('click', () => { const email = document.getElementById('email-input').value; const password = document.getElementById('password-input').value; if (!email || !password) { showToast('Email dan password harus diisi.', 'error'); return; } signInWithEmailAndPassword(auth, email, password).then(() => { document.getElementById('login-modal').classList.add('hidden'); showToast(`Selamat datang kembali!`, 'success'); }).catch(() => { showToast('Login gagal. Periksa kembali email dan password Anda.', 'error'); }); });
+    document.getElementById('anonymous-login-btn').addEventListener('click', () => { signInAnonymously(auth).then(() => { document.getElementById('login-modal').classList.add('hidden'); showToast('Anda login sebagai tamu.', 'info'); }).catch(() => { showToast('Gagal login sebagai tamu.', 'error'); }); });
     document.getElementById('admin-panel-btn').addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
     document.getElementById('cancel-sewa-form').addEventListener('click', () => document.getElementById('sewa-form-modal').classList.add('hidden'));
     document.getElementById('submit-sewa-form').addEventListener('click', async () => {
         const waInput = document.getElementById('whatsapp-input').value;
-        if (waInput.length !== 4 || !/^\d+$/.test(waInput)) {
-            showToast('Mohon masukkan 4 digit angka yang valid.', 'error');
-            return;
-        }
+        if (waInput.length !== 4 || !/^\d+$/.test(waInput)) { showToast('Mohon masukkan 4 digit angka yang valid.', 'error'); return; }
         const user = auth.currentUser;
-        if (!user || !selectedSewaData.paket) {
-            showToast('Sesi tidak valid. Silakan coba lagi.', 'error');
-            return;
-        }
+        if (!user || !selectedSewaData.paket) { showToast('Sesi tidak valid. Silakan coba lagi.', 'error'); return; }
         const billingId = waInput;
         const adminInfo = selectedSewaData.admin;
         const paketInfo = selectedSewaData.paket;
@@ -320,9 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const docRef = await addDoc(collection(db, "transactions"), transactionData);
             console.log("Transaksi tertunda berhasil dibuat dengan ID: ", docRef.id);
             let adminWhatsapp = adminInfo.whatsapp.replace(/\D/g, '');
-            if (adminWhatsapp.startsWith('0')) {
-                adminWhatsapp = '62' + adminWhatsapp.substring(1);
-            }
+            if (adminWhatsapp.startsWith('0')) { adminWhatsapp = '62' + adminWhatsapp.substring(1); }
             const message = encodeURIComponent(`Halo Admin ${adminInfo.name},\n\nSaya sudah membuat permintaan sewa:\n- Pengguna: ${user.displayName}\n- Paket: ${paketInfo.nama}\n- Billing ID: ${billingId}\n\nMohon untuk dikonfirmasi.`);
             document.getElementById('sewa-form-modal').classList.add('hidden');
             document.getElementById('qris-instruction').innerHTML = `Permintaan sewa dengan ID <strong class="text-white">${billingId}</strong> sedang menunggu konfirmasi dari <strong class="text-white">${adminInfo.name}</strong>.`;
@@ -337,13 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-qris-modal').addEventListener('click', () => document.getElementById('qris-modal').classList.add('hidden'));
     
     // --- LISTENER GLOBAL UNTUK DATA REALTIME DARI FIRESTORE ---
-    onSnapshot(collection(db, `pcs`), (snapshot) => { /* ... kode monitoring pc ... */ });
-    onSnapshot(collection(db, `admins`), (snapshot) => { /* ... kode pilihan admin ... */ });
-    onSnapshot(query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15)), (snapshot) => { /* ... kode riwayat transaksi ... */ });
+    onSnapshot(collection(db, `pcs`), (snapshot) => { const pcMonitoringDiv = document.getElementById('pc-monitoring'); const homeSewaButtonContainer = document.getElementById('home-sewa-button-container'); if(!pcMonitoringDiv) return; pcMonitoringDiv.innerHTML = ''; homeSewaButtonContainer.innerHTML = ''; let isReadyPC = false; Object.values(countdownIntervals).forEach(clearInterval); countdownIntervals = {}; if (snapshot.empty) { pcMonitoringDiv.innerHTML = '<p class="col-span-full text-center text-gray-300 backdrop-blur-custom p-4 rounded-lg">Belum ada PC yang dikonfigurasi.</p>'; return; } const pcData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(pc => pc.name).sort((a, b) => a.name.localeCompare(b.name)); pcData.forEach(pc => { const statusClass = pc.status === 'READY' ? 'bg-status-ready' : pc.status === 'DIGUNAKAN' ? 'bg-status-digunakan' : 'bg-status-offline'; let timerHTML = `<p class="font-bold text-base text-white">${pc.status}</p>`; if (pc.status === 'DIGUNAKAN' && pc.endTime) { const endTime = pc.endTime.toDate(); const timerElementId = `timer-${pc.id}`; timerHTML = `<p id="${timerElementId}" class="font-bold text-base text-yellow-400">Menghitung...</p>`; countdownIntervals[pc.id] = setInterval(() => { const now = new Date(); const distance = endTime - now; const timerEl = document.getElementById(timerElementId); if(timerEl) { if (distance < 0) { clearInterval(countdownIntervals[pc.id]); timerEl.innerHTML = "Waktu Habis"; timerEl.classList.remove('text-yellow-400'); timerEl.classList.add('text-red-500'); } else { const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0'); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0'); const seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0'); timerEl.innerHTML = `${hours}:${minutes}:${seconds}`; } } }, 1000); } pcMonitoringDiv.innerHTML += `<div class="backdrop-blur-custom rounded-lg shadow-lg flex flex-col"><div class="monitor-icon p-4"><div class="status-dot ${statusClass}"></div><div class="text-center"><i class="fas fa-desktop text-5xl text-gray-400"></i><p class="mt-2 text-base font-bold text-white">${pc.name}</p></div></div><div class="p-2 text-center -mt-2">${timerHTML}</div><div class="mt-auto"><div class="monitor-stand"></div><div class="monitor-base"></div></div></div>`; if (pc.status === 'READY') isReadyPC = true; }); if (isReadyPC) { homeSewaButtonContainer.innerHTML = `<button id="sewa-sekarang-btn" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-sky-600 transform hover:scale-105 transition-transform duration-300 shadow-lg">Sewa Sekarang <i class="fas fa-arrow-right ml-2"></i></button>`; if(document.getElementById('sewa-sekarang-btn')) { document.getElementById('sewa-sekarang-btn').addEventListener('click', () => showPage('sewa')); } } else { homeSewaButtonContainer.innerHTML = `<button class="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg text-lg cursor-not-allowed" disabled>Semua PC Penuh</button>`; } });
+    onSnapshot(collection(db, `admins`), (snapshot) => { const adminSelectionDiv = document.getElementById('admin-selection'); if(!adminSelectionDiv) return; adminSelectionDiv.innerHTML = ''; if (snapshot.empty) return; const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Makassar"})); const currentHour = now.getHours(); const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(admin => admin.name).sort((a,b) => a.name.localeCompare(b.name)); admins.forEach(admin => { let isActuallyOnline = admin.isOnline; let scheduleText = admin.jadwal || 'Jadwal Fleksibel'; if (admin.jamMulai && admin.jamSelesai) { const jamMulai = parseInt(admin.jamMulai.split(':')[0]); const jamSelesai = parseInt(admin.jamSelesai.split(':')[0]); scheduleText = `${admin.jamMulai} - ${admin.jamSelesai} WITA`; if (jamMulai > jamSelesai) { isActuallyOnline = currentHour >= jamMulai || currentHour < jamSelesai; } else { isActuallyOnline = currentHour >= jamMulai && currentHour < jamSelesai; } } const statusClass = isActuallyOnline ? 'bg-green-500' : 'bg-red-500'; const statusText = isActuallyOnline ? 'Online' : 'Offline'; const cardClasses = "admin-card backdrop-blur-custom p-6 rounded-lg shadow-lg transition-all"; const interactiveClasses = "cursor-pointer hover:border-sky-500"; const disabledClasses = "opacity-50 cursor-not-allowed"; const cardHTML = `<div class="${cardClasses} ${isActuallyOnline ? interactiveClasses : disabledClasses}" ${isActuallyOnline ? `data-admin-id="${admin.id}"` : ''}><div class="flex items-center"><div class="relative"><i class="fas fa-user-circle text-4xl text-gray-300"></i><span class="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ${statusClass} ring-2 ring-black/20"></span></div><div class="ml-4"><h4 class="text-xl font-bold text-white">${admin.name}</h4><p class="text-sm font-semibold ${isActuallyOnline ? 'text-green-400' : 'text-red-400'}">${statusText}</p><p class="text-xs text-gray-300 mt-1">${scheduleText}</p></div></div></div>`; adminSelectionDiv.innerHTML += cardHTML; }); document.querySelectorAll('.admin-card').forEach(card => { if (!card.classList.contains('cursor-not-allowed')) { card.addEventListener('click', () => { const adminId = card.dataset.adminId; const selectedAdmin = admins.find(a => a.id === adminId); document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-white/20')); card.classList.add('border-sky-500', 'bg-white/20'); renderHargaList(selectedAdmin); }); } }); });
+    onSnapshot(query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15)), (snapshot) => { const transaksiList = document.getElementById('transaksi-list'); if(!transaksiList) return; transaksiList.innerHTML = ''; if(snapshot.empty) { transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Belum ada riwayat transaksi.</td></tr>'; return; } snapshot.forEach(doc => { const trx = doc.data(); const statusClass = trx.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400'; transaksiList.innerHTML += `<tr class="border-b border-white/10 hover:bg-white/5"><td class="px-6 py-4 font-medium">${trx.billingId}</td><td class="px-6 py-4">${trx.paket?.nama || 'N/A'}</td><td class="px-6 py-4">${trx.adminName || 'Admin'}</td><td class="px-6 py-4 font-bold ${statusClass}">${trx.status}</td></tr>`; }); });
     
     // --- RENDER KONTEN DINAMIS LAINNYA ---
-    const tutorialVideosData = [ /* ... data video ... */ ]; 
-    // ... kode render video ...
+    const tutorialVideosData = [ { title: 'TUTORIAL MAIN FIVEM', link: 'coming soon' }, { title: 'TUTORIAL BUAT AKUN DISCORD', link: 'https://youtu.be/KAuhg-6kXhY?si=8PiS7mxwtSY4QmxP' }, { title: 'TUTORIAL BUAT AKUN STEAM', link: 'https://youtu.be/4kPkifr2ZUI?si=jbhoi6RHUxpORSoa' }, { title: 'TUTORIAL BUAT AKUN CFX.RE', link: 'coming soon' }, { title: 'TUTORIAL ON MIC DI PC DEEPLINK', link: 'https://youtu.be/0PY7c_1FaoM?si=uyZvwTUMjZiU9BaE' }, { title: 'ON MIC ANDROID', link: 'coming soon' } ]; 
+    const videoContainer = document.getElementById('tutorial-videos'); 
+    if(videoContainer){ videoContainer.innerHTML = ''; tutorialVideosData.forEach(video => { const isComingSoon = video.link === 'coming soon'; const cardHTML = ` <div class="backdrop-blur-custom rounded-lg shadow-lg overflow-hidden flex flex-col"> <div class="relative h-40 bg-black/20 flex items-center justify-center"> <i class="fab fa-youtube text-5xl text-red-500"></i> ${isComingSoon ? '<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"><span class="text-white font-bold">SEGERA HADIR</span></div>' : ''} </div> <div class="p-4 flex-grow flex flex-col"> <h3 class="font-bold text-white flex-grow">${video.title}</h3> ${isComingSoon ? '<button class="mt-4 w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Tonton</button>' : `<a href="${video.link}" target="_blank" class="mt-4 block text-center w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700">Tonton</a>`} </div> </div> `; videoContainer.innerHTML += cardHTML; }); }
 
     showPage('home');
 });
