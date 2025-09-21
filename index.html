@@ -82,28 +82,21 @@
         <div id="admin-panel" class="page">
             <h2 class="text-3xl font-bold mb-6 text-white">Admin Panel</h2>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-3 backdrop-blur-custom p-6 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-4">Buat Transaksi Manual</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input type="text" id="manual-billing-id" placeholder="Billing ID (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                        <input type="text" id="manual-user-name" placeholder="Nama User (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                        <input type="text" id="manual-paket-name" placeholder="Nama Paket (dari WA)" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                    </div>
-                    <button id="submit-manual-transaction" class="mt-4 w-full md:w-auto bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">
-                        <i class="fas fa-plus-circle mr-2"></i>Buat & Simpan Transaksi
-                    </button>
+                <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Manajemen Transaksi</h3>
+                    <div id="admin-transaksi-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
                 </div>
                 <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-4">Kontrol Status PC</h3>
                     <div id="admin-pc-controls" class="space-y-4"></div>
                 </div>
                 <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-4">Manajemen Transaksi</h3>
-                    <div id="admin-transaksi-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
-                </div>
-                <div class="lg:col-span-1 backdrop-blur-custom p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-4">Kontrol Status Admin</h3>
                     <div id="admin-status-controls" class="flex flex-wrap gap-4"></div>
+                    <hr class="border-white/20 my-4">
+                    <button id="enable-notifications-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-bell mr-2"></i>Aktifkan Notifikasi di HP Ini
+                    </button>
                 </div>
             </div>
         </div>
@@ -119,8 +112,19 @@
     <div id="sewa-form-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="backdrop-blur-custom p-8 rounded-lg shadow-xl w-full max-w-md"><h2 class="text-2xl font-bold mb-4 text-white">Formulir Penyewaan</h2><p class="text-gray-300 mb-6">Lengkapi data berikut untuk membuat billing ID.</p><div><label for="whatsapp-input" class="block text-sm font-medium text-gray-200">4 Digit Terakhir No. WhatsApp</label><input type="tel" id="whatsapp-input" maxlength="4" class="mt-1 block w-full bg-white/10 border border-white/20 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="Contoh: 2566"></div><div class="mt-6 flex justify-end space-x-4"><button id="cancel-sewa-form" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Batal</button><button id="submit-sewa-form" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg">Lanjut ke WhatsApp</button></div></div></div>
     <div id="qris-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="backdrop-blur-custom p-8 rounded-lg shadow-xl w-full max-w-sm text-center"><h2 id="qris-title" class="text-2xl font-bold mb-4 text-white">Konfirmasi via WhatsApp</h2><div class="w-full h-64 flex items-center justify-center"><i class="fab fa-whatsapp text-9xl text-green-400"></i></div><p id="qris-instruction" class="text-gray-200 mt-2">Silahkan kirim pesan yang sudah disiapkan untuk melanjutkan transaksi.</p><a id="whatsapp-link-qris" href="#" target="_blank" class="mt-6 inline-block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg"><i class="fab fa-whatsapp mr-2"></i> Kirim Pesan ke Admin</a><button id="close-qris-modal" class="mt-4 text-gray-300 hover:text-white">Tutup</button></div></div>
     
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/auth-compat.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
+    <script>
+        try {
+            const messaging = firebase.messaging();
+        } catch (e) {
+            console.error("Firebase Messaging tidak didukung di browser ini.", e);
+        }
+    </script>
+
     <script type="module" src="script.js"></script>
 </body>
-
 </html>
-
