@@ -112,23 +112,53 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
     }
     
-    onAuthStateChanged(auth, async (user) => { 
-        currentUser = user; 
-        if (user) { 
-            const userDocRef = doc(db, `users/${user.uid}`); 
-            const userDoc = await getDoc(userDocRef); 
-            if (userDoc.exists()) {
-                currentUserData = { id: user.uid, ...userDoc.data() };
-            } else {
-                currentUserData = null;
-            }
-            updateUIForAuthState(user, currentUserData?.isAdmin || false, user.displayName || 'Tamu'); 
-        } else { 
-            currentUserData = null; 
-            updateUIForAuthState(null, false, null); 
-        } 
-    });
+    // CARI onAuthStateChanged dan GANTI dengan versi ini
+onAuthStateChanged(auth, async (user) => { 
+    currentUser = user; 
+    const transaksiList = document.getElementById('transaksi-list');
+    if(!transaksiList) return;
+    
+    transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Memuat data...</td></tr>';
 
+    if (user) { 
+        const userDocRef = doc(db, `users/${user.uid}`); 
+        const userDoc = await getDoc(userDocRef); 
+        if (userDoc.exists()) {
+            currentUserData = { id: user.uid, ...userDoc.data() };
+        } else {
+            currentUserData = null;
+        }
+        updateUIForAuthState(user, currentUserData?.isAdmin || false, user.displayName || 'Tamu'); 
+
+        // LOGIKA BARU UNTUK MENAMPILKAN TRANSAKSI
+        let transQuery;
+        if (currentUserData && currentUserData.isAdmin) {
+            // Jika admin, tampilkan 15 transaksi terakhir dari semua orang
+            transQuery = query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15));
+        } else {
+            // Jika pengguna biasa, tampilkan hanya transaksi miliknya
+            transQuery = query(collection(db, 'transactions'), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
+        }
+        
+        onSnapshot(transQuery, (snapshot) => {
+            transaksiList.innerHTML = '';
+            if(snapshot.empty) {
+                transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Belum ada riwayat transaksi.</td></tr>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const trx = doc.data();
+                const statusClass = trx.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400';
+                transaksiList.innerHTML += `<tr class="border-b border-white/10 hover:bg-white/5"><td class="px-6 py-4 font-medium">${trx.billingId}</td><td class="px-6 py-4">${trx.paket?.nama || 'N/A'}</td><td class="px-6 py-4">${trx.adminName || 'Admin'}</td><td class="px-6 py-4 font-bold ${statusClass}">${trx.status}</td></tr>`;
+            });
+        });
+
+    } else { 
+        currentUserData = null; 
+        updateUIForAuthState(null, false, null); 
+        transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Silakan login untuk melihat riwayat transaksi.</td></tr>';
+    } 
+});
     // --- FUNGSI-FUNGSI UNTUK MENAMPILKAN DATA ---
     function renderHargaList(admin) { /* Kode ini tidak berubah dari file Anda */ }
     
@@ -250,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LISTENER GLOBAL & KONTEN DINAMIS ---
     onSnapshot(collection(db, `pcs`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
     onSnapshot(collection(db, `admins`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
-    onSnapshot(query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15)), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
     
     showPage('home');
 });
+
