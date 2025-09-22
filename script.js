@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(closeLoginModal) closeLoginModal.addEventListener('click', () => { const modal = document.getElementById('login-modal'); if(modal) modal.classList.add('hidden'); });
 
     const logoutBtn = document.getElementById('logout-btn');
-    if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => showToast('Logout berhasil.')));
+    if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => { showToast('Logout berhasil.'); showPage('home'); }));
 
     const loginEmailBtn = document.getElementById('login-email-btn');
     if(loginEmailBtn) loginEmailBtn.addEventListener('click', () => {
