@@ -26,7 +26,6 @@ const playlist = [
     { title: "Tia monika", artist: "Alo x Tia monika", src: "https://c.top4top.io/m_35511aw9r1.mp3" }
 ];
 
-// FUNGSI UTAMA YANG DIJALANKAN SAAT HALAMAN SELESAI DIMUAT
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- PEMILIHAN ELEMEN DOM ---
@@ -412,12 +411,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminPanelBtn = document.getElementById('admin-panel-btn');
     if(adminPanelBtn) adminPanelBtn.addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
     
-    // Sisa event listener (login, logout, dll.)
     const loginBtnMain = document.getElementById('login-btn-main');
-    if(loginBtnMain) loginBtnMain.addEventListener('click', () => document.getElementById('login-modal').classList.remove('hidden'));
+    if(loginBtnMain) loginBtnMain.addEventListener('click', () => { const modal = document.getElementById('login-modal'); if(modal) modal.classList.remove('hidden'); });
+
     const closeLoginModal = document.getElementById('close-login-modal');
-    if(closeLoginModal) closeLoginModal.addEventListener('click', () => document.getElementById('login-modal').classList.add('hidden'));
-    // dst. untuk semua tombol...
+    if(closeLoginModal) closeLoginModal.addEventListener('click', () => { const modal = document.getElementById('login-modal'); if(modal) modal.classList.add('hidden'); });
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => showToast('Logout berhasil.')));
+
+    const loginEmailBtn = document.getElementById('login-email-btn');
+    if(loginEmailBtn) loginEmailBtn.addEventListener('click', () => {
+        const email = document.getElementById('email-input').value;
+        const password = document.getElementById('password-input').value;
+        if (!email || !password) { showToast('Email dan password harus diisi.', 'error'); return; }
+        signInWithEmailAndPassword(auth, email, password).then(() => {
+            const modal = document.getElementById('login-modal');
+            if(modal) modal.classList.add('hidden');
+            showToast(`Selamat datang kembali!`, 'success');
+        }).catch(() => { showToast('Login gagal. Periksa kembali email dan password Anda.', 'error'); });
+    });
+
+    const registerEmailBtn = document.getElementById('register-email-btn');
+    if(registerEmailBtn) registerEmailBtn.addEventListener('click', async () => {
+        const email = document.getElementById('email-input').value;
+        const password = document.getElementById('password-input').value;
+        const displayName = prompt("Masukkan nama tampilan Anda (misal: Budi):");
+        if (!email || password.length < 6 || !displayName) { showToast('Email, password (min. 6 karakter), dan nama tampilan harus diisi.', 'error'); return; }
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await updateProfile(user, { displayName: displayName });
+            const userDocRef = doc(db, `users/${user.uid}`);
+            await setDoc(userDocRef, { displayName: displayName, email: user.email, isAdmin: false, name: displayName, createdAt: serverTimestamp() });
+            const modal = document.getElementById('login-modal');
+            if(modal) modal.classList.add('hidden');
+            showToast('Pendaftaran berhasil! Anda sudah login.', 'success');
+        } catch (error) { showToast(error.code === 'auth/email-already-in-use' ? 'Email ini sudah terdaftar.' : 'Pendaftaran gagal.', 'error'); }
+    });
+
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    if(googleLoginBtn) googleLoginBtn.addEventListener('click', () => {
+        signInWithPopup(auth, new GoogleAuthProvider()).then(async (result) => {
+            const user = result.user;
+            const userDocRef = doc(db, `users/${user.uid}`);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, { displayName: user.displayName, email: user.email, isAdmin: false, name: user.displayName, createdAt: serverTimestamp() });
+            }
+            const modal = document.getElementById('login-modal');
+            if(modal) modal.classList.add('hidden');
+            showToast('Login berhasil!');
+        }).catch(() => showToast('Login Google gagal.', 'error'));
+    });
+
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    if(anonymousLoginBtn) anonymousLoginBtn.addEventListener('click', () => {
+        signInAnonymously(auth).then(() => {
+            const modal = document.getElementById('login-modal');
+            if(modal) modal.classList.add('hidden');
+            showToast('Anda login sebagai tamu.', 'info');
+        }).catch(() => showToast('Gagal login sebagai tamu.', 'error'));
+    });
+
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+    if(saveProfileBtn) saveProfileBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const newDisplayName = document.getElementById('profile-displayname').value;
+        const newPassword = document.getElementById('profile-new-password').value;
+        let changesMade = false;
+        try {
+            if (newDisplayName && newDisplayName !== currentUser.displayName) {
+                await updateProfile(currentUser, { displayName: newDisplayName });
+                const userDocRef = doc(db, `users/${currentUser.uid}`);
+                await updateDoc(userDocRef, { displayName: newDisplayName, name: newDisplayName });
+                changesMade = true;
+            }
+            if (newPassword) {
+                if (newPassword.length >= 6) {
+                    await updatePassword(currentUser, newPassword);
+                    changesMade = true;
+                } else {
+                    throw new Error('Password baru harus minimal 6 karakter.');
+                }
+            }
+            showToast(changesMade ? 'Profil berhasil diperbarui!' : 'Tidak ada perubahan.', changesMade ? 'success' : 'info');
+            showPage('home');
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
 
     // --- LISTENER GLOBAL UNTUK DATA REALTIME ---
     onSnapshot(collection(db, 'pcs'), (snapshot) => {
