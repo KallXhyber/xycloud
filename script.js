@@ -29,6 +29,7 @@ const playlist = [
 // FUNGSI UTAMA YANG DIJALANKAN SAAT HALAMAN SELESAI DIMUAT
 document.addEventListener('DOMContentLoaded', () => {
     
+    // --- PEMILIHAN ELEMEN DOM ---
     const toastContainer = document.getElementById('toast-container');
     const successSound = document.getElementById('success-sound');
     const errorSound = document.getElementById('error-sound');
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobile-menu');
     const animatedLogo = document.querySelector('.animated-logo');
 
+    // --- FUNGSI TOAST & NAVIGASI ---
     function showToast(message, type = 'success') { 
         const toast = document.createElement('div'); 
         const iconClass = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-times-circle' : 'fa-info-circle'); 
@@ -66,18 +68,70 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mobileMenu) mobileMenu.classList.add('hidden');
     }
 
+    // --- EVENT LISTENER AWAL ---
     navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); }); });
     if(mobileMenuButton) mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
     if(animatedLogo) animatedLogo.addEventListener('click', () => showPage('home'));
 
+    // --- LOGIKA MUSIC PLAYER ---
     const mainAudioPlayer = document.getElementById('main-audio-player');
     const playPauseBtn = document.getElementById('play-pause-btn');
     if (playPauseBtn) {
-        // ... (kode music player lengkap) ...
+        const nextBtn = document.getElementById('next-track-btn');
+        const prevBtn = document.getElementById('prev-track-btn');
+        const trackTitleEl = document.getElementById('track-title');
+        const trackArtistEl = document.getElementById('track-artist');
+        const musicPlayerEl = document.getElementById('music-player');
+        const minimizePlayerBtn = document.getElementById('minimize-player-btn');
+        const minimizedIcon = document.getElementById('minimized-icon');
+        const volumeSlider = document.getElementById('volume-slider');
+        
+        const loadTrack = (index) => {
+            const track = playlist[index];
+            if(trackTitleEl) trackTitleEl.textContent = track.title;
+            if(trackArtistEl) trackArtistEl.textContent = track.artist;
+            if(mainAudioPlayer) mainAudioPlayer.src = track.src;
+            if(mainAudioPlayer && volumeSlider) mainAudioPlayer.volume = volumeSlider.value / 100;
+        };
+        const playTrack = () => {
+            if(mainAudioPlayer) mainAudioPlayer.play().catch(e => {});
+            if(playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        };
+        const pauseTrack = () => {
+            if(mainAudioPlayer) mainAudioPlayer.pause();
+            if(playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        };
+
+        playPauseBtn.addEventListener('click', () => { mainAudioPlayer.paused ? playTrack() : pauseTrack(); });
+        if(nextBtn) nextBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+        if(prevBtn) prevBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+        if(volumeSlider) volumeSlider.addEventListener('input', (e) => { mainAudioPlayer.volume = e.target.value / 100; });
+        if(mainAudioPlayer) mainAudioPlayer.addEventListener('ended', () => { if(nextBtn) nextBtn.click(); });
+        if(minimizePlayerBtn) minimizePlayerBtn.addEventListener('click', () => musicPlayerEl.classList.add('minimized'));
+        if(minimizedIcon) minimizedIcon.addEventListener('click', () => musicPlayerEl.classList.remove('minimized'));
+        
+        loadTrack(currentTrackIndex);
     }
     
+    // --- FUNGSI OTENTIKASI & MANAJEMEN USER ---
     function updateUIForAuthState(user, isAdmin, displayName) { 
-        // ... (kode updateUIForAuthState lengkap) ...
+        const loginContainer = document.getElementById('login-container');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const adminPanelBtn = document.getElementById('admin-panel-btn');
+        const profileLink = document.getElementById('profile-link');
+        
+        if (user) {
+            if(loginContainer) loginContainer.classList.add('hidden');
+            if(userInfo) { userInfo.classList.remove('hidden'); userInfo.classList.add('flex'); }
+            if(userName) userName.textContent = displayName;
+            if(profileLink) profileLink.classList.toggle('hidden', user.isAnonymous);
+            if(adminPanelBtn) adminPanelBtn.classList.toggle('hidden', !isAdmin);
+        } else {
+            if(loginContainer) loginContainer.classList.remove('hidden');
+            if(userInfo) userInfo.classList.add('hidden');
+            if(adminPanelBtn) adminPanelBtn.classList.add('hidden');
+        }
     }
     
     onAuthStateChanged(auth, async (user) => { 
@@ -90,7 +144,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const transaksiList = document.getElementById('transaksi-list');
             if (transaksiList) {
-                // ... (kode onSnapshot untuk riwayat transaksi lengkap) ...
+                transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Memuat data...</td></tr>';
+                let transQuery;
+                if (currentUserData && currentUserData.isAdmin) {
+                    transQuery = query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15));
+                } else {
+                    transQuery = query(collection(db, 'transactions'), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
+                }
+                onSnapshot(transQuery, (snapshot) => {
+                    if (!transaksiList) return;
+                    transaksiList.innerHTML = '';
+                    if(snapshot.empty) {
+                        transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Belum ada riwayat transaksi.</td></tr>';
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const trx = doc.data();
+                        const statusClass = trx.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400';
+                        transaksiList.innerHTML += `<tr class="border-b border-white/10 hover:bg-white/5"><td class="px-6 py-4 font-medium">${trx.billingId}</td><td class="px-6 py-4">${trx.paket?.nama || 'N/A'}</td><td class="px-6 py-4">${trx.adminName || 'Admin'}</td><td class="px-6 py-4 font-bold ${statusClass}">${trx.status}</td></tr>`;
+                    });
+                });
             }
         } else { 
             currentUserData = null; 
@@ -102,34 +175,237 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
     });
 
-    function calculateAndDisplayIncome(adminName) { /* ... kode lengkap ... */ }
+    // --- FUNGSI-FUNGSI BISNIS ---
+    function calculateAndDisplayIncome(adminName) { 
+        const incomeDisplay = document.getElementById('total-pendapatan'); 
+        if(!incomeDisplay) return;
+        const q = query(collection(db, 'usageLogs'), where('adminName', '==', adminName)); 
+        onSnapshot(q, (snapshot) => { 
+            let totalPendapatan = 0; 
+            snapshot.forEach(doc => { totalPendapatan += doc.data().keuntungan || 0; }); 
+            incomeDisplay.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPendapatan); 
+        }); 
+    }
     
     function renderAdminView() {
         if (currentUserData && currentUserData.isAdmin) {
-            // ... (kode renderAdminView lengkap) ...
+            const adminPcControls = document.getElementById('admin-pc-controls');
+            const adminTransaksiList = document.getElementById('admin-transaksi-list');
+            const adminStatusControls = document.getElementById('admin-status-controls');
+
+            if(adminPcControls) {
+                onSnapshot(collection(db, 'pcs'), (snapshot) => {
+                    adminPcControls.innerHTML = '';
+                    const pcs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(pc => pc.name).sort((a, b) => a.name.localeCompare(b.name));
+                    pcs.forEach(pc => {
+                        let timerControlHTML = '';
+                        if (pc.status === 'DIGUNAKAN') {
+                            timerControlHTML = `<div class="flex items-center gap-2 mt-2"><input type="number" placeholder="Menit" class="w-20 bg-white/10 text-white rounded p-1 text-center pc-timer-input"><button class="bg-blue-600 text-white px-2 py-1 rounded text-sm set-waktu-btn" data-id="${pc.id}">Set Waktu</button></div>`;
+                        }
+                        adminPcControls.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><div class="flex items-center justify-between"><span class="font-bold text-white">${pc.name}</span><select class="pc-status-select bg-black/30 text-white rounded p-1" data-id="${pc.id}"><option value="READY" ${pc.status === 'READY' ? 'selected' : ''}>Ready</option><option value="DIGUNAKAN" ${pc.status === 'DIGUNAKAN' ? 'selected' : ''}>Digunakan</option><option value="OFFLINE" ${pc.status === 'OFFLINE' ? 'selected' : ''}>Offline</option></select></div>${timerControlHTML}</div>`;
+                    });
+                });
+            }
+
+            if(adminTransaksiList) {
+                const transQuery = query(collection(db, 'transactions'), where("adminName", "==", currentUserData.name), where("status", "in", ["Menunggu Konfirmasi", "Menunggu Pembayaran"]), orderBy("timestamp", "desc"));
+                onSnapshot(transQuery, (snapshot) => {
+                    adminTransaksiList.innerHTML = '';
+                    if (snapshot.empty) {
+                        adminTransaksiList.innerHTML = '<p class="text-center text-gray-300">Tidak ada tugas transaksi.</p>';
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const trx = { id: doc.id, ...doc.data() };
+                        let buttonHTML = '';
+                        const trxDataString = JSON.stringify(trx).replace(/'/g, "&apos;");
+                        if (trx.status === "Menunggu Konfirmasi") {
+                            buttonHTML = `<button class="konfirmasi-transaksi-btn mt-2 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700" data-id="${trx.id}">Konfirmasi Pesanan</button>`;
+                        } else if (trx.status === "Menunggu Pembayaran") {
+                            buttonHTML = `<button class="selesaikan-transaksi-btn mt-2 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600" data-id="${trx.id}" data-trx='${trxDataString}'>Selesaikan Transaksi</button>`;
+                        }
+                        adminTransaksiList.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p><p class="text-white"><strong>Status:</strong> <span class="font-bold text-yellow-400">${trx.status}</span></p>${buttonHTML}</div>`;
+                    });
+                }, (error) => {
+                    console.error("Error fetching transactions: ", error);
+                    adminTransaksiList.innerHTML = '<p class="text-center text-red-400">Gagal memuat transaksi. Cek Index & Rules.</p>';
+                });
+            }
+
+            if(adminStatusControls) {
+                onSnapshot(collection(db, 'admins'), (snapshot) => {
+                    adminStatusControls.innerHTML = '';
+                    const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(admin => admin.name).sort((a, b) => a.name.localeCompare(b.name));
+                    admins.forEach(admin => {
+                        adminStatusControls.innerHTML += `<div class="flex items-center space-x-2"><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" value="" class="sr-only peer admin-online-toggle" data-id="${admin.id}" ${admin.isOnline ? 'checked' : ''}><div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div></label><span class="font-bold text-white">${admin.name}</span></div>`;
+                    });
+                });
+            }
         }
     }
     
     document.body.addEventListener('click', async (e) => { 
-        // ... (kode event listener klik lengkap) ...
+        const target = e.target.closest('button, a');
+        if(!target) return;
+
+        if (target.classList.contains('konfirmasi-transaksi-btn')) {
+            const trxId = target.dataset.id;
+            if (!trxId) return;
+            try {
+                const trxDocRef = doc(db, 'transactions', trxId);
+                await updateDoc(trxDocRef, { status: "Menunggu Pembayaran" });
+                showToast("Transaksi berhasil dikonfirmasi!", "success");
+            } catch (error) { showToast("Gagal mengonfirmasi.", "error"); }
+        }
+
+        if (target.classList.contains('selesaikan-transaksi-btn')) {
+            const trxId = target.dataset.id;
+            const trxData = JSON.parse(target.dataset.trx);
+            if (!trxId || !trxData) return;
+            try {
+                const trxDocRef = doc(db, 'transactions', trxId);
+                await updateDoc(trxDocRef, { status: "Selesai" });
+                
+                const adminUserDocRef = doc(db, 'users', trxData.adminId);
+                const adminUserDoc = await getDoc(adminUserDocRef);
+
+                if (adminUserDoc.exists() && adminUserDoc.data().role === 'reseller' && trxData.keuntungan > 0) {
+                    await addDoc(collection(db, 'usageLogs'), {
+                        adminName: trxData.adminName,
+                        keuntungan: trxData.keuntungan,
+                        paketNama: trxData.paket.nama,
+                        userDisplayName: trxData.userDisplayName,
+                        timestamp: serverTimestamp()
+                    });
+                    showToast("Transaksi Selesai & Pendapatan dicatat!", "success");
+                } else {
+                    showToast("Transaksi Selesai!", "success");
+                }
+            } catch (error) {
+                console.error("Gagal menyelesaikan transaksi: ", error);
+                showToast("Gagal menyelesaikan transaksi.", "error");
+            }
+        }
     });
 
     const profileLink = document.getElementById('profile-link');
     if(profileLink) profileLink.addEventListener('click', (e) => {
-        // ... (kode event listener profil lengkap) ...
+        e.preventDefault();
+        if (!currentUser || !currentUserData) return;
+        document.getElementById('profile-email').value = currentUser.email || 'Tidak ada email';
+        document.getElementById('profile-displayname').value = currentUser.displayName || '';
+        document.getElementById('profile-new-password').value = '';
+        const pendapatanContainer = document.getElementById('pendapatan-container');
+        const sisaWaktuContainer = document.getElementById('sisa-waktu-container');
+        const sisaWaktuDisplay = document.getElementById('sisa-waktu-display');
+
+        if (sisaWaktuContainer && currentUserData.sisaWaktuDetik > 0) {
+            sisaWaktuDisplay.textContent = formatDetikKeWaktu(currentUserData.sisaWaktuDetik);
+            sisaWaktuContainer.classList.remove('hidden');
+        } else if (sisaWaktuContainer) {
+            sisaWaktuContainer.classList.add('hidden');
+        }
+        
+        if (pendapatanContainer && currentUserData.isAdmin && currentUserData.role === 'reseller') {
+            pendapatanContainer.classList.remove('hidden');
+            calculateAndDisplayIncome(currentUserData.name);
+        } else if(pendapatanContainer) {
+            pendapatanContainer.classList.add('hidden');
+        }
+        showPage('profile');
     });
 
     const submitSewaForm = document.getElementById('submit-sewa-form');
     if(submitSewaForm) submitSewaForm.addEventListener('click', async () => {
-        // ... (kode event listener form sewa lengkap) ...
+        const waInput = document.getElementById('whatsapp-input').value;
+        if (waInput.length !== 4 || !/^\d+$/.test(waInput)) { showToast('Mohon masukkan 4 digit angka yang valid.', 'error'); return; }
+        const user = auth.currentUser;
+        if (!user || !selectedSewaData.paket) { showToast('Sesi tidak valid. Silakan coba lagi.', 'error'); return; }
+        
+        const billingId = waInput; 
+        const paketInfo = selectedSewaData.paket;
+        const adminInfo = selectedSewaData.admin;
+        
+        const transactionData = {
+            userId: user.uid,
+            userDisplayName: user.displayName,
+            billingId: billingId,
+            adminName: adminInfo.name,
+            adminId: adminInfo.id,
+            paket: paketInfo,
+            keuntungan: selectedSewaData.keuntungan || 0,
+            status: "Menunggu Konfirmasi",
+            timestamp: serverTimestamp(),
+        };
+
+        try {
+            await addDoc(collection(db, 'transactions'), transactionData);
+            let adminWhatsapp = adminInfo.whatsapp.replace(/\D/g, '');
+            if (adminWhatsapp.startsWith('0')) { adminWhatsapp = '62' + adminWhatsapp.substring(1); }
+            const message = encodeURIComponent(`Halo Admin ${adminInfo.name},\n\nSaya ingin sewa PC:\n- Pengguna: ${user.displayName}\n- Paket: ${paketInfo.nama}\n- Billing ID: ${billingId}\n\nMohon konfirmasinya.`);
+            document.getElementById('sewa-form-modal').classList.add('hidden');
+            document.getElementById('qris-instruction').innerHTML = `Permintaan sewa dengan ID <strong class="text-white">${billingId}</strong> sedang menunggu konfirmasi dari <strong class="text-white">${adminInfo.name}</strong>.`;
+            document.getElementById('whatsapp-link-qris').href = `https://wa.me/${adminWhatsapp}?text=${message}`;
+            document.getElementById('qris-modal').classList.remove('hidden');
+            showToast('Permintaan sewa terkirim, tunggu konfirmasi admin.', 'info');
+        } catch (error) {
+            console.error("Gagal membuat transaksi: ", error);
+            showToast("Gagal membuat permintaan sewa.", "error");
+        }
     });
 
     const adminPanelBtn = document.getElementById('admin-panel-btn');
     if(adminPanelBtn) adminPanelBtn.addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
     // ... sisa event listener lainnya (login, logout, dll) ...
 
+    // --- LISTENER GLOBAL UNTUK DATA REALTIME ---
     onSnapshot(collection(db, 'pcs'), (snapshot) => {
-        // ... (kode onSnapshot untuk monitoring PC lengkap) ...
+        const pcMonitoringDiv = document.getElementById('pc-monitoring');
+        const homeSewaButtonContainer = document.getElementById('home-sewa-button-container');
+        if(!pcMonitoringDiv || !homeSewaButtonContainer) return;
+        pcMonitoringDiv.innerHTML = '';
+        homeSewaButtonContainer.innerHTML = '';
+        let isReadyPC = false;
+        Object.values(countdownIntervals).forEach(clearInterval);
+        countdownIntervals = {};
+        if (snapshot.empty) { pcMonitoringDiv.innerHTML = '<p class="col-span-full text-center text-gray-300">Belum ada PC.</p>'; return; }
+        const pcData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(pc => pc.name).sort((a, b) => a.name.localeCompare(b.name));
+        pcData.forEach(pc => {
+            const statusClass = pc.status === 'READY' ? 'bg-status-ready' : pc.status === 'DIGUNAKAN' ? 'bg-status-digunakan' : 'bg-status-offline';
+            let timerHTML = `<p class="font-bold text-base text-white">${pc.status}</p>`;
+            if (pc.status === 'DIGUNAKAN' && pc.endTime) {
+                const endTime = pc.endTime.toDate();
+                const timerElementId = `timer-${pc.id}`;
+                timerHTML = `<p id="${timerElementId}" class="font-bold text-base text-yellow-400">Menghitung...</p>`;
+                countdownIntervals[pc.id] = setInterval(() => {
+                    const now = new Date();
+                    const distance = endTime - now;
+                    const timerEl = document.getElementById(timerElementId);
+                    if(timerEl) {
+                        if (distance < 0) {
+                            clearInterval(countdownIntervals[pc.id]);
+                            timerEl.innerHTML = "Waktu Habis";
+                            timerEl.classList.remove('text-yellow-400');
+                            timerEl.classList.add('text-red-500');
+                        } else {
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                            timerEl.innerHTML = `${hours}:${minutes}:${seconds}`;
+                        }
+                    }
+                }, 1000);
+            }
+            pcMonitoringDiv.innerHTML += `<div class="backdrop-blur-custom rounded-lg shadow-lg flex flex-col"><div class="monitor-icon p-4"><div class="status-dot ${statusClass}"></div><div class="text-center"><i class="fas fa-desktop text-5xl text-gray-400"></i><p class="mt-2 text-base font-bold text-white">${pc.name}</p></div></div><div class="p-2 text-center -mt-2">${timerHTML}</div><div class="mt-auto"><div class="monitor-stand"></div><div class="monitor-base"></div></div></div>`;
+            if (pc.status === 'READY') isReadyPC = true;
+        });
+        if (isReadyPC) {
+            homeSewaButtonContainer.innerHTML = `<button id="sewa-sekarang-btn" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-sky-600 transform hover:scale-105 transition-transform duration-300 shadow-lg">Sewa Sekarang <i class="fas fa-arrow-right ml-2"></i></button>`;
+            const sewaBtn = document.getElementById('sewa-sekarang-btn');
+            if(sewaBtn) sewaBtn.addEventListener('click', () => showPage('sewa'));
+        } else {
+            homeSewaButtonContainer.innerHTML = `<button class="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg text-lg cursor-not-allowed" disabled>Semua PC Penuh</button>`;
+        }
     });
     
     onSnapshot(collection(db, 'admins'), (snapshot) => {
@@ -137,10 +413,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!adminSelectionDiv) return;
         adminSelectionDiv.innerHTML = '';
         if (snapshot.empty) return;
-        const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // ... (kode render admin selection lengkap) ...
-        
+        const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Makassar"}));
+        const currentHour = now.getHours();
+        const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(admin => admin.name).sort((a,b) => a.name.localeCompare(b.name));
+        admins.forEach(admin => {
+            let isActuallyOnline = admin.isOnline;
+            let scheduleText = admin.jadwal || 'Jadwal Fleksibel';
+            if (admin.jamMulai && admin.jamSelesai) {
+                const jamMulai = parseInt(admin.jamMulai.split(':')[0]);
+                const jamSelesai = parseInt(admin.jamSelesai.split(':')[0]);
+                scheduleText = `${admin.jamMulai} - ${admin.jamSelesai} WITA`;
+                if (jamMulai > jamSelesai) { isActuallyOnline = currentHour >= jamMulai || currentHour < jamSelesai; } 
+                else { isActuallyOnline = currentHour >= jamMulai && currentHour < jamSelesai; }
+            }
+            const statusClass = isActuallyOnline ? 'bg-green-500' : 'bg-red-500';
+            const statusText = isActuallyOnline ? 'Online' : 'Offline';
+            const cardClasses = "admin-card backdrop-blur-custom p-6 rounded-lg shadow-lg transition-all";
+            const interactiveClasses = "cursor-pointer hover:border-sky-500";
+            const disabledClasses = "opacity-50 cursor-not-allowed";
+            const cardHTML = `<div class="${cardClasses} ${isActuallyOnline ? interactiveClasses : disabledClasses}" ${isActuallyOnline ? `data-admin-id="${admin.id}"` : ''}><div class="flex items-center"><div class="relative"><i class="fas fa-user-circle text-4xl text-gray-300"></i><span class="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ${statusClass} ring-2 ring-black/20"></span></div><div class="ml-4"><h4 class="text-xl font-bold text-white">${admin.name}</h4><p class="text-sm font-semibold ${isActuallyOnline ? 'text-green-400' : 'text-red-400'}">${statusText}</p><p class="text-xs text-gray-300 mt-1">${scheduleText}</p></div></div></div>`;
+            adminSelectionDiv.innerHTML += cardHTML;
+        });
         document.querySelectorAll('.admin-card').forEach(card => {
             if (!card.classList.contains('cursor-not-allowed')) {
                 card.addEventListener('click', () => {
@@ -149,7 +442,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(selectedAdmin) {
                         document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-white/20'));
                         card.classList.add('border-sky-500', 'bg-white/20');
-                        // renderHargaList(selectedAdmin); // <-- BARIS INI PENYEBAB ERROR, KITA NONAKTIFKAN
+                        // Fungsi renderHargaList tidak ada, jadi baris ini dinonaktifkan
+                        // renderHargaList(selectedAdmin); 
                     }
                 });
             }
