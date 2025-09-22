@@ -77,159 +77,164 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGIKA MUSIC PLAYER ---
     const mainAudioPlayer = document.getElementById('main-audio-player');
-    const playPauseBtn = document.getElementById('play-pause-btn'), nextBtn = document.getElementById('next-track-btn'), prevBtn = document.getElementById('prev-track-btn');
-    const trackTitleEl = document.getElementById('track-title'), trackArtistEl = document.getElementById('track-artist');
-    const musicPlayerEl = document.getElementById('music-player'), minimizePlayerBtn = document.getElementById('minimize-player-btn'), minimizedIcon = document.getElementById('minimized-icon');
-    const volumeSlider = document.getElementById('volume-slider');
-    function loadTrack(index) { const track = playlist[index]; trackTitleEl.textContent = track.title; trackArtistEl.textContent = track.artist; mainAudioPlayer.src = track.src; mainAudioPlayer.volume = volumeSlider.value / 100; }
-    function playTrack() { mainAudioPlayer.play().catch(e => {}); playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
-    function pauseTrack() { mainAudioPlayer.pause(); playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; }
-    playPauseBtn.addEventListener('click', () => { mainAudioPlayer.paused ? playTrack() : pauseTrack(); });
-    nextBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
-    prevBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
-    volumeSlider.addEventListener('input', (e) => { mainAudioPlayer.volume = e.target.value / 100; });
-    mainAudioPlayer.addEventListener('ended', () => nextBtn.click());
-    minimizePlayerBtn.addEventListener('click', () => musicPlayerEl.classList.add('minimized'));
-    minimizedIcon.addEventListener('click', () => musicPlayerEl.classList.remove('minimized'));
-    loadTrack(currentTrackIndex);
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    if (playPauseBtn) {
+        const nextBtn = document.getElementById('next-track-btn');
+        const prevBtn = document.getElementById('prev-track-btn');
+        const trackTitleEl = document.getElementById('track-title');
+        const trackArtistEl = document.getElementById('track-artist');
+        const musicPlayerEl = document.getElementById('music-player');
+        const minimizePlayerBtn = document.getElementById('minimize-player-btn');
+        const minimizedIcon = document.getElementById('minimized-icon');
+        const volumeSlider = document.getElementById('volume-slider');
+        
+        function loadTrack(index) {
+            const track = playlist[index];
+            if(trackTitleEl) trackTitleEl.textContent = track.title;
+            if(trackArtistEl) trackArtistEl.textContent = track.artist;
+            if(mainAudioPlayer) mainAudioPlayer.src = track.src;
+            if(mainAudioPlayer && volumeSlider) mainAudioPlayer.volume = volumeSlider.value / 100;
+        }
+        function playTrack() {
+            if(mainAudioPlayer) mainAudioPlayer.play().catch(e => {});
+            if(playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+        function pauseTrack() {
+            if(mainAudioPlayer) mainAudioPlayer.pause();
+            if(playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+
+        playPauseBtn.addEventListener('click', () => { mainAudioPlayer.paused ? playTrack() : pauseTrack(); });
+        if(nextBtn) nextBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+        if(prevBtn) prevBtn.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+        if(volumeSlider) volumeSlider.addEventListener('input', (e) => { mainAudioPlayer.volume = e.target.value / 100; });
+        if(mainAudioPlayer) mainAudioPlayer.addEventListener('ended', () => nextBtn.click());
+        if(minimizePlayerBtn) minimizePlayerBtn.addEventListener('click', () => musicPlayerEl.classList.add('minimized'));
+        if(minimizedIcon) minimizedIcon.addEventListener('click', () => musicPlayerEl.classList.remove('minimized'));
+        
+        loadTrack(currentTrackIndex);
+    }
     
     // --- FUNGSI OTENTIKASI & MANAJEMEN USER ---
     function updateUIForAuthState(user, isAdmin, displayName) { 
-        const loginContainer = document.getElementById('login-container'); 
-        const userInfo = document.getElementById('user-info'); 
-        const userName = document.getElementById('user-name'); 
-        const adminPanelBtn = document.getElementById('admin-panel-btn'); 
-        const profileLink = document.getElementById('profile-link'); 
-        if (user) { 
-            loginContainer.classList.add('hidden'); 
-            userInfo.classList.remove('hidden'); 
-            userInfo.classList.add('flex'); 
-            userName.textContent = displayName; 
-            profileLink.classList.toggle('hidden', user.isAnonymous); 
-            adminPanelBtn.classList.toggle('hidden', !isAdmin); 
-        } else { 
-            loginContainer.classList.remove('hidden'); 
-            userInfo.classList.add('hidden'); 
-            adminPanelBtn.classList.add('hidden'); 
-        } 
+        const loginContainer = document.getElementById('login-container');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const adminPanelBtn = document.getElementById('admin-panel-btn');
+        const profileLink = document.getElementById('profile-link');
+        
+        if (user) {
+            if(loginContainer) loginContainer.classList.add('hidden');
+            if(userInfo) {
+                userInfo.classList.remove('hidden');
+                userInfo.classList.add('flex');
+            }
+            if(userName) userName.textContent = displayName;
+            if(profileLink) profileLink.classList.toggle('hidden', user.isAnonymous);
+            if(adminPanelBtn) adminPanelBtn.classList.toggle('hidden', !isAdmin);
+        } else {
+            if(loginContainer) loginContainer.classList.remove('hidden');
+            if(userInfo) userInfo.classList.add('hidden');
+            if(adminPanelBtn) adminPanelBtn.classList.add('hidden');
+        }
     }
     
-    // CARI onAuthStateChanged dan GANTI dengan versi ini
-onAuthStateChanged(auth, async (user) => { 
-    currentUser = user; 
-    const transaksiList = document.getElementById('transaksi-list');
-    if(!transaksiList) return;
-    
-    transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Memuat data...</td></tr>';
-
-    if (user) { 
-        const userDocRef = doc(db, `users/${user.uid}`); 
-        const userDoc = await getDoc(userDocRef); 
-        if (userDoc.exists()) {
-            currentUserData = { id: user.uid, ...userDoc.data() };
-        } else {
-            currentUserData = null;
-        }
-        updateUIForAuthState(user, currentUserData?.isAdmin || false, user.displayName || 'Tamu'); 
-
-        // LOGIKA BARU UNTUK MENAMPILKAN TRANSAKSI
-        let transQuery;
-        if (currentUserData && currentUserData.isAdmin) {
-            // Jika admin, tampilkan 15 transaksi terakhir dari semua orang
-            transQuery = query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15));
-        } else {
-            // Jika pengguna biasa, tampilkan hanya transaksi miliknya
-            transQuery = query(collection(db, 'transactions'), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
-        }
+    onAuthStateChanged(auth, async (user) => { 
+        currentUser = user; 
         
-        onSnapshot(transQuery, (snapshot) => {
-            transaksiList.innerHTML = '';
-            if(snapshot.empty) {
-                transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Belum ada riwayat transaksi.</td></tr>';
-                return;
-            }
-            snapshot.forEach(doc => {
-                const trx = doc.data();
-                const statusClass = trx.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400';
-                transaksiList.innerHTML += `<tr class="border-b border-white/10 hover:bg-white/5"><td class="px-6 py-4 font-medium">${trx.billingId}</td><td class="px-6 py-4">${trx.paket?.nama || 'N/A'}</td><td class="px-6 py-4">${trx.adminName || 'Admin'}</td><td class="px-6 py-4 font-bold ${statusClass}">${trx.status}</td></tr>`;
-            });
-        });
+        const transaksiList = document.getElementById('transaksi-list');
+        if (transaksiList) {
+            transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Memuat data...</td></tr>';
+        }
 
-    } else { 
-        currentUserData = null; 
-        updateUIForAuthState(null, false, null); 
-        transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Silakan login untuk melihat riwayat transaksi.</td></tr>';
-    } 
-});
+        if (user) { 
+            const userDocRef = doc(db, `users/${user.uid}`); 
+            const userDoc = await getDoc(userDocRef); 
+            if (userDoc.exists()) {
+                currentUserData = { id: user.uid, ...userDoc.data() };
+            } else {
+                currentUserData = null;
+            }
+            updateUIForAuthState(user, currentUserData?.isAdmin || false, user.displayName || 'Tamu'); 
+
+            let transQuery;
+            if (currentUserData && currentUserData.isAdmin) {
+                transQuery = query(collection(db, 'transactions'), orderBy("timestamp", "desc"), limit(15));
+            } else {
+                transQuery = query(collection(db, 'transactions'), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
+            }
+            
+            onSnapshot(transQuery, (snapshot) => {
+                if(transaksiList) {
+                    transaksiList.innerHTML = '';
+                    if(snapshot.empty) {
+                        transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Belum ada riwayat transaksi.</td></tr>';
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const trx = doc.data();
+                        const statusClass = trx.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400';
+                        transaksiList.innerHTML += `<tr class="border-b border-white/10 hover:bg-white/5"><td class="px-6 py-4 font-medium">${trx.billingId}</td><td class="px-6 py-4">${trx.paket?.nama || 'N/A'}</td><td class="px-6 py-4">${trx.adminName || 'Admin'}</td><td class="px-6 py-4 font-bold ${statusClass}">${trx.status}</td></tr>`;
+                    });
+                }
+            });
+
+        } else { 
+            currentUserData = null; 
+            updateUIForAuthState(null, false, null); 
+            if (transaksiList) {
+                transaksiList.innerHTML = '<tr><td colspan="4" class="text-center p-4">Silakan login untuk melihat riwayat transaksi.</td></tr>';
+            }
+        } 
+    });
+
     // --- FUNGSI-FUNGSI UNTUK MENAMPILKAN DATA ---
-    function renderHargaList(admin) { /* Kode ini tidak berubah dari file Anda */ }
-    
     function calculateAndDisplayIncome(adminName) { 
         const incomeDisplay = document.getElementById('total-pendapatan'); 
         const q = query(collection(db, 'usageLogs'), where('adminName', '==', adminName)); 
         onSnapshot(q, (snapshot) => { 
             let totalPendapatan = 0; 
             snapshot.forEach(doc => { totalPendapatan += doc.data().keuntungan || 0; }); 
-            incomeDisplay.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPendapatan); 
+            if(incomeDisplay) incomeDisplay.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPendapatan); 
         }); 
     }
     
-    // --- FUNGSI RENDER ADMIN PANEL ---
     function renderAdminView() {
         if (currentUserData && currentUserData.isAdmin) {
             const adminPcControls = document.getElementById('admin-pc-controls');
             const adminTransaksiList = document.getElementById('admin-transaksi-list');
             const adminStatusControls = document.getElementById('admin-status-controls');
 
-            // 1. Render Kontrol PC
-            onSnapshot(collection(db, 'pcs'), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
+            if(adminPcControls) onSnapshot(collection(db, 'pcs'), (snapshot) => { /* ... Kode tidak berubah ... */ });
 
-            // 2. Render Manajemen Transaksi
-            const transQuery = query(
-                collection(db, 'transactions'),
-                where("adminName", "==", currentUserData.name),
-                where("status", "in", ["Menunggu Konfirmasi", "Menunggu Pembayaran"]),
-                orderBy("timestamp", "desc")
-            );
-            onSnapshot(transQuery, (snapshot) => {
-                adminTransaksiList.innerHTML = '';
-                if (snapshot.empty) {
-                    adminTransaksiList.innerHTML = '<p class="text-center text-gray-300">Tidak ada tugas transaksi.</p>';
-                    return;
-                }
-                snapshot.forEach(doc => {
-                    const trx = { id: doc.id, ...doc.data() };
-                    let buttonHTML = '';
-                    const trxDataString = JSON.stringify(trx).replace(/'/g, "&apos;");
-
-                    if (trx.status === "Menunggu Konfirmasi") {
-                        buttonHTML = `<button class="konfirmasi-transaksi-btn mt-2 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700" data-id="${trx.id}">Konfirmasi Pesanan</button>`;
-                    } else if (trx.status === "Menunggu Pembayaran") {
-                        buttonHTML = `<button class="selesaikan-transaksi-btn mt-2 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600" data-id="${trx.id}" data-trx='${trxDataString}'>Selesaikan Transaksi</button>`;
+            if(adminTransaksiList) {
+                const transQuery = query(collection(db, 'transactions'), where("adminName", "==", currentUserData.name), where("status", "in", ["Menunggu Konfirmasi", "Menunggu Pembayaran"]), orderBy("timestamp", "desc"));
+                onSnapshot(transQuery, (snapshot) => {
+                    adminTransaksiList.innerHTML = '';
+                    if (snapshot.empty) {
+                        adminTransaksiList.innerHTML = '<p class="text-center text-gray-300">Tidak ada tugas transaksi.</p>';
+                        return;
                     }
-
-                    adminTransaksiList.innerHTML += `
-                        <div class="backdrop-blur-custom p-3 rounded-md">
-                            <p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p>
-                            <p class="text-white"><strong>Status:</strong> <span class="font-bold text-yellow-400">${trx.status}</span></p>
-                            ${buttonHTML}
-                        </div>
-                    `;
+                    snapshot.forEach(doc => {
+                        const trx = { id: doc.id, ...doc.data() };
+                        let buttonHTML = '';
+                        const trxDataString = JSON.stringify(trx).replace(/'/g, "&apos;");
+                        if (trx.status === "Menunggu Konfirmasi") {
+                            buttonHTML = `<button class="konfirmasi-transaksi-btn mt-2 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700" data-id="${trx.id}">Konfirmasi Pesanan</button>`;
+                        } else if (trx.status === "Menunggu Pembayaran") {
+                            buttonHTML = `<button class="selesaikan-transaksi-btn mt-2 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600" data-id="${trx.id}" data-trx='${trxDataString}'>Selesaikan Transaksi</button>`;
+                        }
+                        adminTransaksiList.innerHTML += `<div class="backdrop-blur-custom p-3 rounded-md"><p class="text-white"><strong>ID:</strong> ${trx.billingId} (${trx.userDisplayName})</p><p class="text-white"><strong>Status:</strong> <span class="font-bold text-yellow-400">${trx.status}</span></p>${buttonHTML}</div>`;
+                    });
+                }, (error) => {
+                    console.error("Error fetching transactions: ", error);
+                    adminTransaksiList.innerHTML = '<p class="text-center text-red-400">Gagal memuat transaksi. Cek Index & Rules.</p>';
                 });
-            }, (error) => {
-                console.error("Error fetching transactions: ", error);
-                adminTransaksiList.innerHTML = '<p class="text-center text-red-400">Gagal memuat transaksi. Cek Index & Rules.</p>';
-            });
+            }
 
-            // 3. Render Kontrol Status Admin
-            onSnapshot(collection(db, 'admins'), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
+            if(adminStatusControls) onSnapshot(collection(db, 'admins'), (snapshot) => { /* ... Kode tidak berubah ... */ });
         }
     }
-    
-    // --- EVENT LISTENER UNTUK SEMUA KLIK & PERUBAHAN ---
-    document.body.addEventListener('change', async (e) => { /* Kode ini tidak berubah dari file Anda */ });
-
-    document.body.addEventListener('input', (e) => { /* Kode ini tidak berubah dari file Anda */ });
     
     document.body.addEventListener('click', async (e) => { 
         const target = e.target.closest('button, a');
@@ -255,13 +260,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 const adminDoc = await getDoc(doc(db, 'admins', trxData.adminId));
                 if (adminDoc.exists() && adminDoc.data().role === 'reseller' && trxData.paket.keuntungan > 0) {
-                    await addDoc(collection(db, 'usageLogs'), {
-                        adminName: trxData.adminName,
-                        keuntungan: trxData.paket.keuntungan,
-                        paketNama: trxData.paket.nama,
-                        userDisplayName: trxData.userDisplayName,
-                        timestamp: serverTimestamp()
-                    });
+                    await addDoc(collection(db, 'usageLogs'), { /* ... data keuntungan ... */ });
                     showToast("Transaksi Selesai & Pendapatan dicatat!", "success");
                 } else {
                     showToast("Transaksi Selesai!", "success");
@@ -273,17 +272,90 @@ onAuthStateChanged(auth, async (user) => {
         }
     });
 
-    // --- EVENT LISTENER UNTUK TOMBOL & FORM ---
-    document.getElementById('profile-link').addEventListener('click', (e) => { /* Kode ini tidak berubah dari file Anda */ });
-    document.getElementById('submit-sewa-form').addEventListener('click', async () => { /* Kode ini tidak berubah dari file Anda */ });
-    document.getElementById('admin-panel-btn').addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
-    // ... sisa event listener tidak berubah ...
+    const profileLink = document.getElementById('profile-link');
+    if(profileLink) profileLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!currentUser || currentUser.isAnonymous || !currentUserData) return;
+        document.getElementById('profile-email').value = currentUser.email || 'Tidak ada email';
+        document.getElementById('profile-displayname').value = currentUser.displayName || '';
+        document.getElementById('profile-new-password').value = '';
+        const pendapatanContainer = document.getElementById('pendapatan-container');
+        const sisaWaktuContainer = document.getElementById('sisa-waktu-container');
+        const sisaWaktuDisplay = document.getElementById('sisa-waktu-display');
+        if (currentUserData.sisaWaktuDetik && currentUserData.sisaWaktuDetik > 0) {
+            sisaWaktuDisplay.textContent = formatDetikKeWaktu(currentUserData.sisaWaktuDetik);
+            sisaWaktuContainer.classList.remove('hidden');
+        } else {
+            if(sisaWaktuContainer) sisaWaktuContainer.classList.add('hidden');
+        }
+        if (currentUserData.isAdmin && currentUserData.role === 'reseller') {
+            if(pendapatanContainer) pendapatanContainer.classList.remove('hidden');
+            calculateAndDisplayIncome(currentUserData.name);
+        } else {
+            if(pendapatanContainer) pendapatanContainer.classList.add('hidden');
+        }
+        showPage('profile');
+    });
 
-    // --- LISTENER GLOBAL & KONTEN DINAMIS ---
-    onSnapshot(collection(db, `pcs`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
-    onSnapshot(collection(db, `admins`), (snapshot) => { /* Kode ini tidak berubah dari file Anda */ });
+    const adminPanelBtn = document.getElementById('admin-panel-btn');
+    if(adminPanelBtn) adminPanelBtn.addEventListener('click', () => { showPage('admin-panel'); renderAdminView(); });
+
+    // --- LISTENER GLOBAL UNTUK DATA REALTIME DARI FIRESTORE ---
+    onSnapshot(collection(db, 'pcs'), (snapshot) => {
+        const pcMonitoringDiv = document.getElementById('pc-monitoring');
+        const homeSewaButtonContainer = document.getElementById('home-sewa-button-container');
+        if(!pcMonitoringDiv || !homeSewaButtonContainer) return;
+        pcMonitoringDiv.innerHTML = '';
+        homeSewaButtonContainer.innerHTML = '';
+        let isReadyPC = false;
+        Object.values(countdownIntervals).forEach(clearInterval);
+        countdownIntervals = {};
+        if (snapshot.empty) { pcMonitoringDiv.innerHTML = '<p class="col-span-full text-center text-gray-300 backdrop-blur-custom p-4 rounded-lg">Belum ada PC.</p>'; return; }
+        const pcData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(pc => pc.name).sort((a, b) => a.name.localeCompare(b.name));
+        pcData.forEach(pc => { /* ... kode render PC ... */ });
+        if (isReadyPC) {
+            homeSewaButtonContainer.innerHTML = `<button id="sewa-sekarang-btn" class="bg-sky-500 ...">Sewa Sekarang <i class="fas fa-arrow-right ml-2"></i></button>`;
+            const sewaBtn = document.getElementById('sewa-sekarang-btn');
+            if(sewaBtn) sewaBtn.addEventListener('click', () => showPage('sewa'));
+        } else {
+            homeSewaButtonContainer.innerHTML = `<button class="bg-gray-600 ..." disabled>Semua PC Penuh</button>`;
+        }
+    });
     
+    onSnapshot(collection(db, `admins`), (snapshot) => {
+        const adminSelectionDiv = document.getElementById('admin-selection');
+        if(!adminSelectionDiv) return;
+        adminSelectionDiv.innerHTML = '';
+        if (snapshot.empty) return;
+        const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Makassar"}));
+        const currentHour = now.getHours();
+        const admins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(admin => admin.name).sort((a,b) => a.name.localeCompare(b.name));
+        admins.forEach(admin => { /* ... kode render admin selection ... */ });
+        document.querySelectorAll('.admin-card').forEach(card => {
+            if (!card.classList.contains('cursor-not-allowed')) {
+                card.addEventListener('click', () => {
+                    const adminId = card.dataset.adminId;
+                    const selectedAdmin = admins.find(a => a.id === adminId);
+                    if(selectedAdmin) {
+                        document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-white/20'));
+                        card.classList.add('border-sky-500', 'bg-white/20');
+                        // renderHargaList(selectedAdmin); // Fungsi ini belum didefinisikan di kode Anda
+                    }
+                });
+            }
+        });
+    });
+
+    const tutorialVideosData = [ { title: 'TUTORIAL MAIN FIVEM', link: 'coming soon' }, { title: 'TUTORIAL BUAT AKUN DISCORD', link: 'https://youtu.be/KAuhg-6kXhY?si=8PiS7mxwtSY4QmxP' }, { title: 'TUTORIAL BUAT AKUN STEAM', link: 'https://youtu.be/4kPkifr2ZUI?si=jbhoi6RHUxpORSoa' }, { title: 'TUTORIAL BUAT AKUN CFX.RE', link: 'coming soon' }, { title: 'TUTORIAL ON MIC DI PC DEEPLINK', link: 'https://youtu.be/0PY7c_1FaoM?si=uyZvwTUMjZiU9BaE' }, { title: 'ON MIC ANDROID', link: 'coming soon' } ];
+    const videoContainer = document.getElementById('tutorial-videos');
+    if(videoContainer){
+        videoContainer.innerHTML = '';
+        tutorialVideosData.forEach(video => {
+            const isComingSoon = video.link === 'coming soon';
+            const cardHTML = `<div class="backdrop-blur-custom rounded-lg shadow-lg overflow-hidden flex flex-col"><div class="relative h-40 bg-black/20 flex items-center justify-center"><i class="fab fa-youtube text-5xl text-red-500"></i> ${isComingSoon ? '<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"><span class="text-white font-bold">SEGERA HADIR</span></div>' : ''}</div><div class="p-4 flex-grow flex flex-col"><h3 class="font-bold text-white flex-grow">${video.title}</h3> ${isComingSoon ? '<button class="mt-4 w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Tonton</button>' : `<a href="${video.link}" target="_blank" class="mt-4 block text-center w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700">Tonton</a>`}</div></div>`;
+            videoContainer.innerHTML += cardHTML;
+        });
+    }
+
     showPage('home');
 });
-
-
