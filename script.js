@@ -186,6 +186,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }); 
     }
     
+    function renderHargaList(admin) {
+        const hargaContainer = document.getElementById('harga-list-container');
+        const hargaListDiv = document.getElementById('harga-list');
+        const selectedAdminName = document.getElementById('selected-admin-name');
+
+        if (!hargaContainer || !hargaListDiv || !selectedAdminName) return;
+
+        selectedAdminName.textContent = `(${admin.name})`;
+        hargaListDiv.innerHTML = '';
+
+        const prices = admin.prices || {};
+        const allPrices = [
+            ...(prices.perJam || []),
+            ...(prices.paketSiangMalam || []),
+            ...(prices.paketSimpanWaktu || [])
+        ];
+
+        if (allPrices.length === 0) {
+            hargaListDiv.innerHTML = '<p class="text-gray-300 col-span-full">Admin ini belum memiliki daftar harga.</p>';
+        } else {
+            allPrices.forEach(paket => {
+                const keuntungan = (paket.harga - paket.hargaDasar) || 0;
+                if (paket.bisaKustom) {
+                    hargaListDiv.innerHTML += `<div class="backdrop-blur-custom p-6 rounded-lg shadow-lg flex flex-col col-span-1 md:col-span-2"><h4 class="text-xl font-bold text-white">${paket.nama}</h4><p class="text-lg font-medium my-2 text-white">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(paket.harga)} / jam</p><div class="flex items-center gap-4 mt-4"><input type="number" min="1" value="1" class="kustom-jam-input w-20 bg-white/10 text-center font-bold text-white rounded-md p-2" data-harga-per-jam="${paket.harga}"><span>Jam</span><span class="total-harga-display text-2xl font-bold text-white flex-grow text-right">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(paket.harga)}</span></div><button class="mt-4 w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 sewa-kustom-btn" data-paket-nama="${paket.nama}" data-harga-per-jam="${paket.harga}" data-admin-id="${admin.id}" data-admin-name="${admin.name}" data-admin-whatsapp="${admin.whatsapp}" data-keuntungan="${keuntungan}">Sewa Kustom</button></div>`;
+                } else {
+                    hargaListDiv.innerHTML += `<div class="backdrop-blur-custom p-6 rounded-lg shadow-lg flex flex-col"><h4 class="text-xl font-bold text-white">${paket.nama}</h4><p class="text-3xl font-bold my-4 text-white">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(paket.harga)}</p><button class="mt-auto w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 sewa-paket-btn" data-paket-nama="${paket.nama}" data-paket-harga="${paket.harga}" data-paket-durasi="${paket.durasi}" data-admin-id="${admin.id}" data-admin-name="${admin.name}" data-admin-whatsapp="${admin.whatsapp}" data-keuntungan="${keuntungan}">Pilih Paket</button></div>`;
+                }
+            });
+        }
+        hargaContainer.classList.remove('hidden');
+    }
+    
     function renderAdminView() {
         if (currentUserData && currentUserData.isAdmin) {
             const adminPcControls = document.getElementById('admin-pc-controls');
@@ -586,6 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(selectedAdmin) {
                         document.querySelectorAll('.admin-card').forEach(c => c.classList.remove('border-sky-500', 'bg-white/20'));
                         card.classList.add('border-sky-500', 'bg-white/20');
+                        renderHargaList(selectedAdmin);
                     }
                 });
             }
